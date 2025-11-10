@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import { AuthProvider } from './contexts/AuthContext';
 import { Navbar } from './components/Navbar';
 import { Sidebar } from './components/Sidebar';
 import { Login } from './pages/Login';
@@ -9,37 +9,19 @@ import { AskQuestion } from './pages/AskQuestion';
 import { QuestionDetail } from './pages/QuestionDetail';
 import { Tags } from './pages/Tags';
 import { UserProfile } from './pages/UserProfile';
+import { useAuth } from './contexts/AuthContext';
 
-type Page = 'login' | 'signup' | 'dashboard' | 'ask' | 'question' | 'tags' | 'profile';
-
-function AppContent() {
+function Layout({ children }: { children: React.ReactNode }) {
+  const navigate = useNavigate();
   const { loading } = useAuth();
-  const [currentPage, setCurrentPage] = useState<Page>('dashboard');
-  const [questionId, setQuestionId] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [filterMode, setFilterMode] = useState<'search' | 'tag' | null>(null);
-
-  const handleNavigation = (page: string, id?: string) => {
-    setCurrentPage(page as Page);
-    if (page === 'question' && id) {
-      setQuestionId(id);
-    }
-    if (page !== 'dashboard') {
-      setSearchQuery('');
-      setFilterMode(null);
-    }
-  };
 
   const handleSearch = (query: string) => {
-    setSearchQuery(query);
-    setFilterMode('search');
-    setCurrentPage('dashboard');
+    navigate(`/dashboard?search=${query}`);
   };
 
-  const handleTagSelect = (tag: string) => {
-    setSearchQuery(tag);
-    setFilterMode('tag');
-    setCurrentPage('dashboard');
+  const handleNavigation = (page: string, id?: string) => {
+    if (id) navigate(`/${page}/${id}`);
+    else navigate(`/${page}`);
   };
 
   if (loading) {
@@ -50,39 +32,13 @@ function AppContent() {
     );
   }
 
-  if (currentPage === 'login') {
-    return <Login onNavigate={handleNavigation} />;
-  }
-
-  if (currentPage === 'signup') {
-    return <Signup onNavigate={handleNavigation} />;
-  }
-
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar
-        onNavigate={handleNavigation}
-        onSearch={handleSearch}
-        currentPage={currentPage}
-      />
+      <Navbar onNavigate={handleNavigation} onSearch={handleSearch} currentPage="" />
       <div className="flex flex-1">
-        <Sidebar currentPage={currentPage} onNavigate={handleNavigation} />
+        <Sidebar currentPage="" onNavigate={handleNavigation} />
         <main className="flex-1 w-full md:w-auto">
-          {currentPage === 'dashboard' && (
-            <Dashboard
-              onNavigate={handleNavigation}
-              searchQuery={searchQuery}
-              filterMode={filterMode}
-            />
-          )}
-          {currentPage === 'ask' && <AskQuestion onNavigate={handleNavigation} />}
-          {currentPage === 'question' && questionId && (
-            <QuestionDetail questionId={questionId} onNavigate={handleNavigation} />
-          )}
-          {currentPage === 'tags' && (
-            <Tags onNavigate={handleNavigation} onTagSelect={handleTagSelect} />
-          )}
-          {currentPage === 'profile' && <UserProfile onNavigate={handleNavigation} />}
+          {children}
         </main>
       </div>
     </div>
@@ -92,7 +48,70 @@ function AppContent() {
 function App() {
   return (
     <AuthProvider>
-      <AppContent />
+      <Router>
+        <Routes>
+
+          {/* Public Routes */}
+          <Route path="/login" element={<Login onNavigate={() => {}} />} />
+          <Route path="/signup" element={<Signup onNavigate={() => {}} />} />
+
+          {/* Protected UI Layout */}
+          <Route
+            path="/"
+            element={
+              <Layout>
+                <Dashboard onNavigate={() => {}} searchQuery="" filterMode={null} />
+              </Layout>
+            }
+          />
+
+          <Route
+            path="/dashboard"
+            element={
+              <Layout>
+                <Dashboard onNavigate={() => {}} searchQuery="" filterMode={null} />
+              </Layout>
+            }
+          />
+
+          <Route
+            path="/ask"
+            element={
+              <Layout>
+                <AskQuestion onNavigate={() => {}} />
+              </Layout>
+            }
+          />
+
+          <Route
+            path="/question/:id"
+            element={
+              <Layout>
+                <QuestionDetail questionId="" onNavigate={() => {}} />
+              </Layout>
+            }
+          />
+
+          <Route
+            path="/tags"
+            element={
+              <Layout>
+                <Tags onNavigate={() => {}} onTagSelect={() => {}} />
+              </Layout>
+            }
+          />
+
+          <Route
+            path="/profile"
+            element={
+              <Layout>
+                <UserProfile onNavigate={() => {}} />
+              </Layout>
+            }
+          />
+
+        </Routes>
+      </Router>
     </AuthProvider>
   );
 }

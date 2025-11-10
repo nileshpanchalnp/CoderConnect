@@ -9,7 +9,7 @@ interface SidebarProps {
 }
 
 export const Sidebar = ({ currentPage, onNavigate }: SidebarProps) => {
-  const { user, profile, signOut } = useAuth();
+  const { user, signOut } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
 
@@ -104,11 +104,11 @@ export const Sidebar = ({ currentPage, onNavigate }: SidebarProps) => {
           {user && (
             <div className="border-t border-gray-200 px-4 py-6 space-y-2">
               <div className="bg-gradient-to-r from-cyan-100 to-blue-100 rounded-lg p-4 mb-4">
-                <p className="text-sm font-medium text-gray-900">{profile?.display_name}</p>
-                <p className="text-xs text-gray-600">@{profile?.username}</p>
+                <p className="text-sm font-medium text-gray-900">{user?.display_name}</p>
+                <p className="text-xs text-gray-600">@{user?.username}</p>
                 <div className="flex items-center gap-1 mt-2 text-sm font-semibold text-yellow-600">
                   <Trophy className="w-4 h-4" />
-                  {profile?.reputation || 0} points
+                  {user?.reputation || 0} points
                 </div>
               </div>
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
+import axios from 'axios';
 import { MessageSquare, Eye, ThumbsUp, ThumbsDown, Tag } from 'lucide-react';
-import { supabase, Question } from '../lib/supabase';
 import { Card } from '../components/Card';
 import { formatDistanceToNow } from '../utils/date';
 
@@ -10,7 +10,13 @@ interface DashboardProps {
   filterMode?: 'search' | 'tag' | null;
 }
 
-interface QuestionWithStats extends Question {
+interface QuestionWithStats {
+  views: ReactNode;
+  _id: string;
+  title: string;
+  description: string;
+  created_at: string;
+  author_id: { username: string; display_name: string; reputation: number };
   answer_count: number;
   vote_likes: number;
   vote_dislikes: number;
@@ -28,84 +34,37 @@ export const Dashboard = ({ onNavigate, searchQuery, filterMode }: DashboardProp
   const loadQuestions = async () => {
     setLoading(true);
     try {
-      let questionsData: Question[] = [];
+      // Base GET request to your backend API
+const response = await axios.get('http://localhost:5000/question/getAll', {
+  headers: {
+    'Cache-Control': 'no-cache',
+    Pragma: 'no-cache',
+  },
+});
+      let data: QuestionWithStats[] = response.data.questions || [];
+      console.log( 'Fetched questions:', response.data.questions);
 
-      if (filterMode === 'tag' && searchQuery) {
-        const { data: tagData } = await supabase
-          .from('tags')
-          .select('id')
-          .eq('name', searchQuery)
-          .maybeSingle();
-
-        if (tagData) {
-          const { data: questionTagsData } = await supabase
-            .from('question_tags')
-            .select('question_id')
-            .eq('tag_id', tagData.id);
-
-          const questionIds = questionTagsData?.map((qt) => qt.question_id) || [];
-
-          if (questionIds.length > 0) {
-            const { data: qData } = await supabase
-              .from('questions')
-              .select('*, profiles (username, display_name, reputation)')
-              .in('id', questionIds)
-              .order('created_at', { ascending: false });
-
-            questionsData = qData || [];
-          }
-        }
-      } else {
-        let query = supabase
-          .from('questions')
-          .select('*, profiles (username, display_name, reputation)')
-          .order('created_at', { ascending: false });
-
-        if (filterMode === 'search' && searchQuery) {
-          query = query.or(`title.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`);
-        }
-
-        const { data } = await query;
-        questionsData = data || [];
+      // Apply filters locally (same logic as before)
+      if (filterMode === 'search' && searchQuery) {
+        const q = searchQuery.toLowerCase();
+        data = data.filter(
+          (item) =>
+            item.title.toLowerCase().includes(q) ||
+            item.description.toLowerCase().includes(q)
+        );
       }
 
-      const questionsWithStats = await Promise.all(
-        questionsData.map(async (q: Question) => {
-          const { data: tags } = await supabase
-            .from('question_tags')
-            .select('tags (name)')
-            .eq('question_id', q.id);
+      if (filterMode === 'tag' && searchQuery) {
+        const tagQuery = searchQuery.toLowerCase();
+        data = data.filter((item) =>
+          item.tags?.some((t) => t.name.toLowerCase() === tagQuery)
+        );
+      }
 
-          const { count: answerCount } = await supabase
-            .from('answers')
-            .select('*', { count: 'exact', head: true })
-            .eq('question_id', q.id);
+      // Sort by created_at (most recent first)
+      data.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-          const { data: votes } = await supabase
-            .from('votes')
-            .select('vote_type')
-            .eq('question_id', q.id);
-
-          const voteLikes = votes?.filter((v) => v.vote_type === 'like').length || 0;
-          const voteDislikes = votes?.filter((v) => v.vote_type === 'dislike').length || 0;
-
-          return {
-            ...q,
-            answer_count: answerCount || 0,
-            vote_likes: voteLikes,
-            vote_dislikes: voteDislikes,
-            tags: tags
-              ? tags.flatMap((t: any) =>
-                  Array.isArray(t.tags)
-                    ? t.tags.map((tag: any) => ({ name: tag.name }))
-                    : [{ name: t.tags?.name }]
-                )
-              : [],
-          };
-        })
-      );
-
-      setQuestions(questionsWithStats);
+      setQuestions(data);
     } catch (error) {
       console.error('Error loading questions:', error);
     } finally {
@@ -145,10 +104,10 @@ export const Dashboard = ({ onNavigate, searchQuery, filterMode }: DashboardProp
           ) : (
             questions.map((question) => (
               <Card
-                key={question.id}
+                key={question._id}
                 hover
                 className="p-6 cursor-pointer"
-                onClick={() => onNavigate('question', question.id)}
+                onClick={() => onNavigate('/question/:id', question._id)}
               >
                 <div className="flex gap-6">
                   <div className="flex flex-col items-center gap-3 text-sm text-gray-600 min-w-[80px]">
@@ -194,7 +153,7 @@ export const Dashboard = ({ onNavigate, searchQuery, filterMode }: DashboardProp
                       <span>
                         asked by{' '}
                         <span className="font-medium text-gray-700">
-                          {question.profiles?.display_name}
+                          {question.author_id?.display_name}
                         </span>
                       </span>
                       <span>{formatDistanceToNow(question.created_at)}</span>

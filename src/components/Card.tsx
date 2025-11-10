@@ -4,6 +4,7 @@ interface CardProps {
   children: ReactNode;
   className?: string;
   hover?: boolean;
+   onClick?: () => void;
 }
 
 export const Card = ({ children, className = '', hover = false }: CardProps) => {

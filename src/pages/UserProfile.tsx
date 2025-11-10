@@ -17,7 +17,7 @@ interface Stats {
 }
 
 export const UserProfile = ({ onNavigate }: UserProfileProps) => {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [stats, setStats] = useState<Stats>({
     questionsAsked: 0,
@@ -108,13 +108,13 @@ export const UserProfile = ({ onNavigate }: UserProfileProps) => {
             </div>
             <div className="flex-1">
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                {profile?.display_name}
+                {user?.display_name}
               </h1>
-              <p className="text-gray-600 mb-4">@{profile?.username}</p>
+              <p className="text-gray-600 mb-4">@{user?.username}</p>
               <div className="flex items-center gap-2 text-lg">
                 <Trophy className="w-6 h-6 text-yellow-500" />
                 <span className="font-semibold text-gray-900">
-                  {profile?.reputation || 0}
+                  {user?.reputation || 0}
                 </span>
                 <span className="text-gray-600">reputation points</span>
               </div>

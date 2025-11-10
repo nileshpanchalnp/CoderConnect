@@ -10,7 +10,7 @@ interface NavbarProps {
 }
 
 export const Navbar = ({ onSearch, onNavigate, currentPage }: NavbarProps) => {
-  const { user, profile, signOut } = useAuth();
+  const { user, signOut } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -106,7 +106,7 @@ export const Navbar = ({ onSearch, onNavigate, currentPage }: NavbarProps) => {
                   >
                     <User className="w-5 h-5 text-gray-700" />
                     <span className="hidden sm:inline text-sm font-medium text-gray-700">
-                      {profile?.username}
+                      {user?.username}
                     </span>
                   </button>
 
@@ -114,11 +114,11 @@ export const Navbar = ({ onSearch, onNavigate, currentPage }: NavbarProps) => {
                     <div className="absolute right-0 mt-2 w-56 bg-white/90 backdrop-blur-md rounded-xl border border-white/40 shadow-xl overflow-hidden">
                       <div className="px-4 py-3 border-b border-gray-200">
                         <p className="text-sm font-medium text-gray-900">
-                          {profile?.display_name}
+                          {user?.display_name}
                         </p>
                         <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
                           <Trophy className="w-3 h-3 text-yellow-500" />
-                          {profile?.reputation || 0} reputation
+                          {user?.reputation || 0} reputation
                         </p>
                       </div>
                       <button

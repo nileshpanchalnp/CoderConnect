@@ -1,10 +1,10 @@
 import { useState, KeyboardEvent } from 'react';
 import { X } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { supabase } from '../lib/supabase';
 import { Input, Textarea } from '../components/Input';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
+import axios from 'axios';
 
 interface AskQuestionProps {
   onNavigate: (page: string, id?: string) => void;
@@ -54,81 +54,32 @@ export const AskQuestion = ({ onNavigate }: AskQuestionProps) => {
     setTags(tags.filter((tag) => tag !== tagToRemove));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
+ const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setError('');
 
-    if (!title.trim()) {
-      setError('Please enter a title');
-      return;
-    }
+  if (!title.trim()) return setError('Please enter a title');
+  if (!description.trim()) return setError('Please enter a description');
+  if (tags.length === 0) return setError('Please add at least one tag');
 
-    if (!description.trim()) {
-      setError('Please enter a description');
-      return;
-    }
+  setLoading(true);
 
-    if (tags.length === 0) {
-      setError('Please add at least one tag');
-      return;
-    }
+  try {
+    const res = await axios.post("http://localhost:5000/Question/create", {
+      title,
+      description,
+      tags,
+      userId: user.id,   // sending logged in user id
+    });
 
-    setLoading(true);
-
-    try {
-      const { data: question, error: questionError } = await supabase
-        .from('questions')
-        .insert({
-          title: title.trim(),
-          description: description.trim(),
-          author_id: user.id,
-        })
-        .select()
-        .single();
-
-      if (questionError) throw questionError;
-
-      for (const tagName of tags) {
-        const { data: existingTag } = await supabase
-          .from('tags')
-          .select('id')
-          .eq('name', tagName)
-          .maybeSingle();
-
-        let tagId = existingTag?.id;
-
-        if (!tagId) {
-          const { data: newTag, error: tagError } = await supabase
-            .from('tags')
-            .insert({ name: tagName })
-            .select()
-            .single();
-
-          if (tagError) throw tagError;
-          tagId = newTag.id;
-        }
-
-        const { error: linkError } = await supabase
-          .from('question_tags')
-          .insert({
-            question_id: question.id,
-            tag_id: tagId,
-          });
-
-        if (linkError) throw linkError;
-      }
-
-      onNavigate('question', question.id);
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError('Failed to create question');
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
+    onNavigate('question', res.data.questionId);
+    
+  } catch (err: any) {
+    setError(err.response?.data?.message || "Failed to create question");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-blue-50 to-purple-50 p-4">

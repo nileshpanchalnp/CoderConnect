@@ -1,10 +1,18 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { User } from '@supabase/supabase-js';
-import { supabase, Profile } from '../lib/supabase';
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import axios from "axios";
+
+axios.defaults.withCredentials = true; // send cookies with requests
+
+interface UserProfile {
+  id: string;
+  username: string;
+  display_name: string;
+  avatar_url?: string;
+  reputation: number;
+}
 
 interface AuthContextType {
-  user: User | null;
-  profile: Profile | null;
+  user: UserProfile | null;
   loading: boolean;
   signUp: (email: string, password: string, username: string, displayName: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
@@ -14,99 +22,54 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within AuthProvider');
-  }
-  return context;
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be used inside AuthProvider");
+  return ctx;
 };
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        loadProfile(session.user.id);
-      } else {
-        setLoading(false);
-      }
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      (async () => {
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          await loadProfile(session.user.id);
-        } else {
-          setProfile(null);
-        }
-      })();
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const loadProfile = async (userId: string) => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .maybeSingle();
-
-    if (!error && data) {
-      setProfile(data);
+  // Load logged-in user profile on refresh
+  const loadProfile = async () => {
+    try {
+      const res = await axios.get("http://localhost:5000/profile/me");
+      setUser(res.data.user);
+    } catch {
+      setUser(null);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
   const signUp = async (email: string, password: string, username: string, displayName: string) => {
-    const { data, error } = await supabase.auth.signUp({
+    await axios.post("http://localhost:5000/User/signup", {
       email,
       password,
+      username,
+      display_name: displayName
     });
-
-    if (error) throw error;
-
-    if (data.user) {
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert({
-          id: data.user.id,
-          username,
-          display_name: displayName,
-          reputation: 0,
-        });
-
-      if (profileError) throw profileError;
-    }
+    await loadProfile();
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) throw error;
+    await axios.post("http://localhost:5000/User/signin", { email, password });
+    await loadProfile();
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
+    await axios.post("http://localhost:5000/User/signout");
+    setUser(null);
   };
 
-  const value = {
-    user,
-    profile,
-    loading,
-    signUp,
-    signIn,
-    signOut,
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ user, loading, signUp, signIn, signOut }}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
