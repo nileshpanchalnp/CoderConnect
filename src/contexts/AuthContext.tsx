@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import axios from "axios";
+import { Server } from "../Utills/Server";
 
 axios.defaults.withCredentials = true; // send cookies with requests
 
@@ -34,7 +35,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Load logged-in user profile on refresh
   const loadProfile = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/profile/me");
+      const res = await axios.get(Server+`profile/me`);
       setUser(res.data.user);
     } catch {
       setUser(null);
@@ -48,7 +49,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const signUp = async (email: string, password: string, username: string, displayName: string) => {
-    await axios.post("http://localhost:5000/User/signup", {
+    await axios.post(Server+`User/signup`, {
       email,
       password,
       username,
@@ -58,12 +59,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signIn = async (email: string, password: string) => {
-    await axios.post("http://localhost:5000/User/signin", { email, password });
+    await axios.post(Server+`User/signin`, { email, password });
     await loadProfile();
   };
 
   const signOut = async () => {
-    await axios.post("http://localhost:5000/User/signout");
+    await axios.post(Server+`User/signout`);
     setUser(null);
   };
 

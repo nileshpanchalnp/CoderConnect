@@ -3,12 +3,10 @@ import { useAuth } from '../contexts/AuthContext';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
+import { useNavigate } from 'react-router-dom';
 
-interface LoginProps {
-  onNavigate: (page: string) => void;
-}
-
-export const Login = ({ onNavigate }: LoginProps) => {
+export const Login = () => {
+  const navigate = useNavigate();
   const { signIn } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -22,7 +20,7 @@ export const Login = ({ onNavigate }: LoginProps) => {
 
     try {
       await signIn(email, password);
-      onNavigate('dashboard');
+      navigate('/'); 
     } catch (err) {
       setError('Invalid email or password');
     } finally {
@@ -59,6 +57,7 @@ export const Login = ({ onNavigate }: LoginProps) => {
           <Input
             type="password"
             label="Password"
+            autoComplete="current-password"
             placeholder="••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -78,7 +77,7 @@ export const Login = ({ onNavigate }: LoginProps) => {
           <p className="text-sm text-gray-600">
             Don't have an account?{' '}
             <button
-              onClick={() => onNavigate('signup')}
+              onClick={() => navigate("/signup")}
               className="text-cyan-600 hover:text-cyan-700 font-medium"
             >
               Sign up

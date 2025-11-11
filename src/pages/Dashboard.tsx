@@ -3,6 +3,8 @@ import axios from 'axios';
 import { MessageSquare, Eye, ThumbsUp, ThumbsDown, Tag } from 'lucide-react';
 import { Card } from '../components/Card';
 import { formatDistanceToNow } from '../utils/date';
+import { Server } from '../Utills/Server';
+import { useNavigate } from 'react-router-dom';
 
 interface DashboardProps {
   onNavigate: (page: string, id?: string) => void;
@@ -11,7 +13,8 @@ interface DashboardProps {
 }
 
 interface QuestionWithStats {
-  views: ReactNode;
+  views: number;
+  id: String;
   _id: string;
   title: string;
   description: string;
@@ -23,7 +26,9 @@ interface QuestionWithStats {
   tags: { name: string }[];
 }
 
-export const Dashboard = ({ onNavigate, searchQuery, filterMode }: DashboardProps) => {
+export const Dashboard = ({  searchQuery, filterMode }: DashboardProps) => {
+  const navigate = useNavigate();
+
   const [questions, setQuestions] = useState<QuestionWithStats[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -35,15 +40,14 @@ export const Dashboard = ({ onNavigate, searchQuery, filterMode }: DashboardProp
     setLoading(true);
     try {
       // Base GET request to your backend API
-const response = await axios.get('http://localhost:5000/question/getAll', {
-  headers: {
-    'Cache-Control': 'no-cache',
-    Pragma: 'no-cache',
-  },
-});
+      const response = await axios.get(Server + `question/getAll`, {
+        headers: {
+          'Cache-Control': 'no-cache',
+          Pragma: 'no-cache',
+        },
+      });
       let data: QuestionWithStats[] = response.data.questions || [];
-      console.log( 'Fetched questions:', response.data.questions);
-
+      console.log('Fetched questions:', response.data.questions);
       // Apply filters locally (same logic as before)
       if (filterMode === 'search' && searchQuery) {
         const q = searchQuery.toLowerCase();
@@ -60,7 +64,6 @@ const response = await axios.get('http://localhost:5000/question/getAll', {
           item.tags?.some((t) => t.name.toLowerCase() === tagQuery)
         );
       }
-
       // Sort by created_at (most recent first)
       data.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
@@ -70,6 +73,9 @@ const response = await axios.get('http://localhost:5000/question/getAll', {
     } finally {
       setLoading(false);
     }
+  };
+  const handleQuestionClick = (_id: string) => {
+    navigate(`/question/${_id}`);
   };
 
   if (loading) {
@@ -107,7 +113,7 @@ const response = await axios.get('http://localhost:5000/question/getAll', {
                 key={question._id}
                 hover
                 className="p-6 cursor-pointer"
-                onClick={() => onNavigate('/question/:id', question._id)}
+              // onClick={() => onNavigate(`/question/${question.id}`)}
               >
                 <div className="flex gap-6">
                   <div className="flex flex-col items-center gap-3 text-sm text-gray-600 min-w-[80px]">
@@ -130,7 +136,9 @@ const response = await axios.get('http://localhost:5000/question/getAll', {
                   </div>
 
                   <div className="flex-1">
-                    <h2 className="text-xl font-semibold text-gray-900 mb-2 hover:text-cyan-600 transition-colors">
+                    <h2
+                      onClick={() => handleQuestionClick(question._id)}
+                      className="text-xl font-semibold text-gray-900 mb-2 hover:text-cyan-600 transition-colors">
                       {question.title}
                     </h2>
                     <p className="text-gray-600 mb-4 line-clamp-2">
@@ -144,7 +152,7 @@ const response = await axios.get('http://localhost:5000/question/getAll', {
                           className="inline-flex items-center gap-1 px-3 py-1 bg-cyan-100 text-cyan-700 rounded-full text-sm font-medium"
                         >
                           <Tag className="w-3 h-3" />
-                          {tag.name}
+                          {tag}
                         </span>
                       ))}
                     </div>

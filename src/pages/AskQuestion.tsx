@@ -5,12 +5,12 @@ import { Input, Textarea } from '../components/Input';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import axios from 'axios';
+import { Server } from '../Utills/Server';
+import { useNavigate } from 'react-router-dom';
 
-interface AskQuestionProps {
-  onNavigate: (page: string, id?: string) => void;
-}
 
-export const AskQuestion = ({ onNavigate }: AskQuestionProps) => {
+export const AskQuestion = () => {
+    const navigate = useNavigate();
   const { user } = useAuth();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -29,7 +29,7 @@ export const AskQuestion = ({ onNavigate }: AskQuestionProps) => {
           <p className="text-gray-600 mb-6">
             You need to be logged in to ask a question.
           </p>
-          <Button onClick={() => onNavigate('login')}>Sign In</Button>
+          <Button onClick={() => navigate('login')}>Sign In</Button>
         </Card>
       </div>
     );
@@ -65,14 +65,14 @@ export const AskQuestion = ({ onNavigate }: AskQuestionProps) => {
   setLoading(true);
 
   try {
-    const res = await axios.post("http://localhost:5000/Question/create", {
+    const res = await axios.post(Server+`Question/create`, {
       title,
       description,
       tags,
       userId: user.id,   // sending logged in user id
     });
 
-    onNavigate('question', res.data.questionId);
+    navigate('question', res.data.questionId);
     
   } catch (err: any) {
     setError(err.response?.data?.message || "Failed to create question");
@@ -169,7 +169,7 @@ export const AskQuestion = ({ onNavigate }: AskQuestionProps) => {
               <Button
                 type="button"
                 variant="ghost"
-                onClick={() => onNavigate('dashboard')}
+                onClick={() => navigate('/')}
               >
                 Cancel
               </Button>

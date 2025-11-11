@@ -3,12 +3,10 @@ import { useAuth } from '../contexts/AuthContext';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
+import { useNavigate } from 'react-router-dom';
 
-interface SignupProps {
-  onNavigate: (page: string) => void;
-}
-
-export const Signup = ({ onNavigate }: SignupProps) => {
+export const Signup = () => {
+  const navigate = useNavigate();
   const { signUp } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -24,7 +22,7 @@ export const Signup = ({ onNavigate }: SignupProps) => {
 
     try {
       await signUp(email, password, username, displayName);
-      onNavigate('dashboard');
+      navigate('/signup'); // ✅ THIS WILL NOW WORK
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
@@ -103,7 +101,7 @@ export const Signup = ({ onNavigate }: SignupProps) => {
           <p className="text-sm text-gray-600">
             Already have an account?{' '}
             <button
-              onClick={() => onNavigate('login')}
+              onClick={() => navigate("/login")}
               className="text-cyan-600 hover:text-cyan-700 font-medium"
             >
               Sign in

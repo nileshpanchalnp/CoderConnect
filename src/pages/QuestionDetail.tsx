@@ -1,34 +1,48 @@
 import { useEffect, useState } from 'react';
 import { ThumbsUp, ThumbsDown, MessageSquare, Eye, Tag, Trophy } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { supabase, Question, Answer, Comment } from '../lib/supabase';
+// Note: Assuming Question, Answer, and Comment types are available globally or imported correctly.
+// Removed supabase import as it's not used for the final comment post logic.
+import { Question, Answer, Comment, Profile } from '../lib/supabase';
 import { Card } from '../components/Card';
 import { Button } from '../components/Button';
 import { Textarea } from '../components/Input';
 import { formatDistanceToNow } from '../utils/date';
+import axios from 'axios';
+import { Server } from '../Utills/Server';
+import { useNavigate, useParams } from 'react-router-dom';
 
+// Removed _id prop since it's retrieved via useParams()
 interface QuestionDetailProps {
-  questionId: string;
   onNavigate: (page: string) => void;
 }
 
+// Removed local Profile interface, using imported Profile type
 interface QuestionWithDetails extends Question {
-  tags: { name: string }[];
+  _id: string;
+  tags?: { name: string }[]; // Added ? for safety
   vote_likes: number;
   vote_dislikes: number;
   user_vote?: 'like' | 'dislike' | null;
+  author_id?: Profile;
 }
 
 interface AnswerWithDetails extends Answer {
+  _id: string;
   vote_likes: number;
   vote_dislikes: number;
   user_vote?: 'like' | 'dislike' | null;
-  comments: Comment[];
+  comments?: Comment[]; // Added ? for safety
+  author_id?: Profile;
 }
 
-export const QuestionDetail = ({ questionId, onNavigate }: QuestionDetailProps) => {
-  const { user, profile } = useAuth();
+export const QuestionDetail = ({ }: QuestionDetailProps) => {
+  const navigate = useNavigate();
+  // We use the parameter name that the server expects: _id
+  const { _id } = useParams();
+  const { user } = useAuth();
   const [question, setQuestion] = useState<QuestionWithDetails | null>(null);
+  // Initializing array states to empty array [] prevents .length error on initial render
   const [answers, setAnswers] = useState<AnswerWithDetails[]>([]);
   const [questionComments, setQuestionComments] = useState<Comment[]>([]);
   const [answerContent, setAnswerContent] = useState('');
@@ -37,171 +51,117 @@ export const QuestionDetail = ({ questionId, onNavigate }: QuestionDetailProps) 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadQuestion();
-    incrementViews();
-  }, [questionId]);
-
-  const incrementViews = async () => {
-    await supabase.rpc('increment', { row_id: questionId });
-
-    const { error } = await supabase
-      .from('questions')
-      .update({ views: supabase.raw('views + 1') })
-      .eq('id', questionId);
-
-    if (!error) {
-      console.log('View incremented');
+    if (_id) {
+      loadQuestion();
     }
-  };
+  }, [_id]);
+
 
   const loadQuestion = async () => {
     setLoading(true);
     try {
-      const { data: questionData, error: questionError } = await supabase
-        .from('questions')
-        .select('*, profiles (*)')
-        .eq('id', questionId)
-        .single();
+      const res = await axios.get(Server + `Question/get/${_id}`);
+      // Check if question exists and set state
+      setQuestion(res.data.question || null);
+      setQuestionComments(res.data.questionComments || []); // Safely default to []
+      setAnswers(res.data.answers || []); // Safely default to []
 
-      if (questionError) throw questionError;
-
-      const { data: tags } = await supabase
-        .from('question_tags')
-        .select('tags (name)')
-        .eq('question_id', questionId);
-
-      const { data: votes } = await supabase
-        .from('votes')
-        .select('vote_type, user_id')
-        .eq('question_id', questionId);
-
-      const voteLikes = votes?.filter((v) => v.vote_type === 'like').length || 0;
-      const voteDislikes = votes?.filter((v) => v.vote_type === 'dislike').length || 0;
-      const userVote = user ? votes?.find((v) => v.user_id === user.id)?.vote_type : null;
-
-      setQuestion({
-        ...questionData,
-        tags: tags?.map((t: { tags: { name: string } }) => ({ name: t.tags.name })) || [],
-        vote_likes: voteLikes,
-        vote_dislikes: voteDislikes,
-        user_vote: userVote as 'like' | 'dislike' | null,
-      });
-
-      const { data: commentsData } = await supabase
-        .from('comments')
-        .select('*, profiles (*)')
-        .eq('question_id', questionId)
-        .order('created_at', { ascending: true });
-
-      setQuestionComments(commentsData || []);
-
-      const { data: answersData } = await supabase
-        .from('answers')
-        .select('*, profiles (*)')
-        .eq('question_id', questionId)
-        .order('created_at', { ascending: false });
-
-      const answersWithDetails = await Promise.all(
-        (answersData || []).map(async (answer) => {
-          const { data: answerVotes } = await supabase
-            .from('votes')
-            .select('vote_type, user_id')
-            .eq('answer_id', answer.id);
-
-          const answerLikes = answerVotes?.filter((v) => v.vote_type === 'like').length || 0;
-          const answerDislikes = answerVotes?.filter((v) => v.vote_type === 'dislike').length || 0;
-          const answerUserVote = user ? answerVotes?.find((v) => v.user_id === user.id)?.vote_type : null;
-
-          const { data: answerComments } = await supabase
-            .from('comments')
-            .select('*, profiles (*)')
-            .eq('answer_id', answer.id)
-            .order('created_at', { ascending: true });
-
-          return {
-            ...answer,
-            vote_likes: answerLikes,
-            vote_dislikes: answerDislikes,
-            user_vote: answerUserVote as 'like' | 'dislike' | null,
-            comments: answerComments || [],
-          };
-        })
-      );
-
-      setAnswers(answersWithDetails);
     } catch (error) {
-      console.error('Error loading question:', error);
+      console.error("Error loading question:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleVote = async (type: 'like' | 'dislike', targetType: 'question' | 'answer', targetId: string) => {
+  const handleVote = async (type: 'like' | 'dislike', targetType: 'question' | 'answer', _id: string) => {
+    // Assuming 'user' is the state variable holding the authenticated user object.
+    // The 'user' check is good for ensuring authentication before proceeding.
     if (!user) {
-      onNavigate('login');
+      navigate("/login");
       return;
     }
 
-    const voteData = {
-      user_id: user.id,
-      vote_type: type,
-      ...(targetType === 'question' ? { question_id: targetId } : { answer_id: targetId }),
-    };
-
-    const { data: existingVote } = await supabase
-      .from('votes')
-      .select('*')
-      .eq('user_id', user.id)
-      .eq(targetType === 'question' ? 'question_id' : 'answer_id', targetId)
-      .maybeSingle();
-
-    if (existingVote) {
-      if (existingVote.vote_type === type) {
-        await supabase.from('votes').delete().eq('id', existingVote.id);
-      } else {
-        await supabase.from('votes').update({ vote_type: type }).eq('id', existingVote.id);
-      }
+    // 1. Construct the dynamic URL path
+    let url: string;
+    if (targetType === 'question') {
+      // Matches the server route: POST /Vote/question/:question_id
+      url = Server + `Vote/question/${_id}`;
     } else {
-      await supabase.from('votes').insert(voteData);
+      // Matches the server route: POST /Vote/answer/:answer_id
+      url = Server + `Vote/answer/${_id}`;
     }
 
-    loadQuestion();
+    try {
+      // 2. Make the POST request
+      // Note: We only send vote_type. The author_id is handled by the 'auth' middleware on the backend.
+      await axios.post(url, {
+        vote_type: type,
+      });
+
+      // 3. Refresh data
+      // This function must be called to re-fetch the question/answers 
+      // to update the vote counts and user's current vote status on the UI.
+      loadQuestion();
+
+    } catch (error) {
+      console.error(`Error voting on ${targetType}:`, error);
+      // Optional: Add some user feedback here (e.g., a toast notification)
+    }
   };
 
   const handlePostAnswer = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !answerContent.trim()) return;
 
-    const { error } = await supabase.from('answers').insert({
-      question_id: questionId,
+    await axios.post(Server + `Answer/create/${_id}`, {
+      question_id: _id,
       author_id: user.id,
       content: answerContent.trim(),
     });
 
-    if (!error) {
-      setAnswerContent('');
-      loadQuestion();
-    }
+    setAnswerContent("");
+    loadQuestion();
   };
 
   const handlePostComment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !commentContent.trim() || !commentTarget) return;
 
-    const commentData = {
-      content: commentContent.trim(),
-      author_id: user.id,
-      ...(commentTarget.type === 'question'
-        ? { question_id: commentTarget.id }
-        : { answer_id: commentTarget.id }),
+    const content = commentContent.trim();
+    // ✅ FIX: The ID is saved in state as 'id', so access it as 'commentTarget.id'
+    const targetId = commentTarget.id;
+
+    // 1. Determine the correct API endpoint and route prefix
+    let url: string;
+    let data: { content: string; author_id: string };
+
+
+    if (commentTarget.type === 'question') {
+      // Use the correctly retrieved targetId
+      url = Server + `CommentQuestion/create/${targetId}`;
+    } else {
+      // Use the correctly retrieved targetId
+      url = Server + `CommnetAnswer/create/${targetId}`;
+    }
+
+    data = {
+      content: content,
+      // Your backend is set up to read the user ID from req.user._id, 
+      // so sending user.id here is unnecessary but harmless if the backend ignores it.
+      author_id: user.id
     };
 
-    const { error } = await supabase.from('comments').insert(commentData);
+    try {
+      // 2. Use axios to post the data to the specific backend endpoint
+      await axios.post(url, data);
 
-    if (!error) {
+      // 3. Clear state and reload data on success
       setCommentContent('');
       setCommentTarget(null);
       loadQuestion();
+
+    } catch (error) {
+      console.error("Error posting comment:", error);
     }
   };
 
@@ -234,12 +194,11 @@ export const QuestionDetail = ({ questionId, onNavigate }: QuestionDetailProps) 
           <div className="flex gap-6">
             <div className="flex flex-col items-center gap-3 min-w-[60px]">
               <button
-                onClick={() => handleVote('like', 'question', question.id)}
-                className={`p-2 rounded-lg transition-all ${
-                  question.user_vote === 'like'
+                onClick={() => handleVote('like', 'question', question._id)}
+                className={`p-2 rounded-lg transition-all ${question.user_vote === 'like'
                     ? 'bg-green-100 text-green-600'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
+                  }`}
               >
                 <ThumbsUp className="w-6 h-6" />
               </button>
@@ -247,12 +206,11 @@ export const QuestionDetail = ({ questionId, onNavigate }: QuestionDetailProps) 
                 {question.vote_likes - question.vote_dislikes}
               </span>
               <button
-                onClick={() => handleVote('dislike', 'question', question.id)}
-                className={`p-2 rounded-lg transition-all ${
-                  question.user_vote === 'dislike'
+                onClick={() => handleVote('dislike', 'question', question._id)}
+                className={`p-2 rounded-lg transition-all ${question.user_vote === 'dislike'
                     ? 'bg-red-100 text-red-600'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
+                  }`}
               >
                 <ThumbsDown className="w-6 h-6" />
               </button>
@@ -274,13 +232,14 @@ export const QuestionDetail = ({ questionId, onNavigate }: QuestionDetailProps) 
               </div>
 
               <div className="flex flex-wrap gap-2 mb-6">
-                {question.tags.map((tag, idx) => (
+                {/* FIX 1: Use optional chaining on question.tags before map */}
+                {question.tags?.map((tag, idx) => (
                   <span
                     key={idx}
                     className="inline-flex items-center gap-1 px-3 py-1 bg-cyan-100 text-cyan-700 rounded-full text-sm font-medium"
                   >
                     <Tag className="w-3 h-3" />
-                    {tag.name}
+                    {tag}
                   </span>
                 ))}
               </div>
@@ -289,18 +248,18 @@ export const QuestionDetail = ({ questionId, onNavigate }: QuestionDetailProps) 
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-gray-600">asked by</span>
                   <span className="text-sm font-medium text-gray-900">
-                    {question.profiles?.display_name}
+                    {question.author_id?.display_name}
                   </span>
                   <span className="flex items-center gap-1 text-xs text-gray-500">
                     <Trophy className="w-3 h-3 text-yellow-500" />
-                    {question.profiles?.reputation}
+                    {question.author_id?.reputation}
                   </span>
                 </div>
                 {!commentTarget && (
                   <Button
                     size="sm"
                     variant="ghost"
-                    onClick={() => setCommentTarget({ type: 'question', id: question.id })}
+                    onClick={() => setCommentTarget({ type: 'question', id: question._id })}
                   >
                     <MessageSquare className="w-4 h-4 mr-1" />
                     Add Comment
@@ -308,13 +267,15 @@ export const QuestionDetail = ({ questionId, onNavigate }: QuestionDetailProps) 
                 )}
               </div>
 
-              {questionComments.length > 0 && (
+              {/* FIX 2: Use optional chaining on questionComments before length check */}
+              {questionComments?.length > 0 && (
                 <div className="mt-4 space-y-2">
+                  {/* Since we checked length > 0, we can safely map */}
                   {questionComments.map((comment) => (
                     <div key={comment.id} className="pl-4 border-l-2 border-gray-300">
                       <p className="text-sm text-gray-700">{comment.content}</p>
                       <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
-                        <span className="font-medium">{comment.profiles?.display_name}</span>
+                        <span className="font-medium">{comment.author_id?.display_name}</span>
                         <span>{formatDistanceToNow(comment.created_at)}</span>
                       </div>
                     </div>
@@ -322,7 +283,7 @@ export const QuestionDetail = ({ questionId, onNavigate }: QuestionDetailProps) 
                 </div>
               )}
 
-              {commentTarget?.type === 'question' && commentTarget.id === question.id && (
+              {commentTarget?.type === 'question' && commentTarget.id === question._id && (
                 <form onSubmit={handlePostComment} className="mt-4">
                   <Textarea
                     placeholder="Add a comment..."
@@ -358,12 +319,11 @@ export const QuestionDetail = ({ questionId, onNavigate }: QuestionDetailProps) 
                 <div className="flex gap-6">
                   <div className="flex flex-col items-center gap-3 min-w-[60px]">
                     <button
-                      onClick={() => handleVote('like', 'answer', answer.id)}
-                      className={`p-2 rounded-lg transition-all ${
-                        answer.user_vote === 'like'
+                      onClick={() => handleVote('like', 'answer', answer._id)}
+                      className={`p-2 rounded-lg transition-all ${answer.user_vote === 'like'
                           ? 'bg-green-100 text-green-600'
                           : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                      }`}
+                        }`}
                     >
                       <ThumbsUp className="w-5 h-5" />
                     </button>
@@ -371,12 +331,11 @@ export const QuestionDetail = ({ questionId, onNavigate }: QuestionDetailProps) 
                       {answer.vote_likes - answer.vote_dislikes}
                     </span>
                     <button
-                      onClick={() => handleVote('dislike', 'answer', answer.id)}
-                      className={`p-2 rounded-lg transition-all ${
-                        answer.user_vote === 'dislike'
+                      onClick={() => handleVote('dislike', 'answer', answer._id)}
+                      className={`p-2 rounded-lg transition-all ${answer.user_vote === 'dislike'
                           ? 'bg-red-100 text-red-600'
                           : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                      }`}
+                        }`}
                     >
                       <ThumbsDown className="w-5 h-5" />
                     </button>
@@ -389,11 +348,11 @@ export const QuestionDetail = ({ questionId, onNavigate }: QuestionDetailProps) 
                       <div className="flex items-center gap-2">
                         <span className="text-sm text-gray-600">answered by</span>
                         <span className="text-sm font-medium text-gray-900">
-                          {answer.profiles?.display_name}
+                          {answer.author_id?.display_name}
                         </span>
                         <span className="flex items-center gap-1 text-xs text-gray-500">
                           <Trophy className="w-3 h-3 text-yellow-500" />
-                          {answer.profiles?.reputation}
+                          {answer.author_id?.reputation}
                         </span>
                         <span className="text-xs text-gray-500">
                           {formatDistanceToNow(answer.created_at)}
@@ -403,7 +362,7 @@ export const QuestionDetail = ({ questionId, onNavigate }: QuestionDetailProps) 
                         <Button
                           size="sm"
                           variant="ghost"
-                          onClick={() => setCommentTarget({ type: 'answer', id: answer.id })}
+                          onClick={() => setCommentTarget({ type: 'answer', id: answer._id })}
                         >
                           <MessageSquare className="w-4 h-4 mr-1" />
                           Add Comment
@@ -411,14 +370,15 @@ export const QuestionDetail = ({ questionId, onNavigate }: QuestionDetailProps) 
                       )}
                     </div>
 
-                    {answer.comments.length > 0 && (
+                    {/* FIX 3: Use optional chaining on answer.comments before length check */}
+                    {answer.comments && answer.comments.length > 0 && (
                       <div className="mt-4 space-y-2">
                         {answer.comments.map((comment) => (
                           <div key={comment.id} className="pl-4 border-l-2 border-gray-300">
                             <p className="text-sm text-gray-700">{comment.content}</p>
                             <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
                               <span className="font-medium">
-                                {comment.profiles?.display_name}
+                                {comment.author_id?.display_name}
                               </span>
                               <span>{formatDistanceToNow(comment.created_at)}</span>
                             </div>
@@ -427,7 +387,7 @@ export const QuestionDetail = ({ questionId, onNavigate }: QuestionDetailProps) 
                       </div>
                     )}
 
-                    {commentTarget?.type === 'answer' && commentTarget.id === answer.id && (
+                    {commentTarget?.type === 'answer' && commentTarget.id === answer._id && (
                       <form onSubmit={handlePostComment} className="mt-4">
                         <Textarea
                           placeholder="Add a comment..."
@@ -476,7 +436,7 @@ export const QuestionDetail = ({ questionId, onNavigate }: QuestionDetailProps) 
         {!user && (
           <Card className="p-6 text-center">
             <p className="text-gray-600 mb-4">Login to post an answer</p>
-            <Button onClick={() => onNavigate('login')}>Sign In</Button>
+            <Button onClick={() => navigate('/login')}>Sign In</Button>
           </Card>
         )}
       </div>

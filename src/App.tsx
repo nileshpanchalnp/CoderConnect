@@ -52,15 +52,15 @@ function App() {
         <Routes>
 
           {/* Public Routes */}
-          <Route path="/login" element={<Login onNavigate={() => {}} />} />
-          <Route path="/signup" element={<Signup onNavigate={() => {}} />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
 
           {/* Protected UI Layout */}
           <Route
             path="/"
             element={
               <Layout>
-                <Dashboard onNavigate={() => {}} searchQuery="" filterMode={null} />
+                <Dashboard onNavigate={() => { }} searchQuery="" filterMode={null} />
               </Layout>
             }
           />
@@ -69,7 +69,7 @@ function App() {
             path="/dashboard"
             element={
               <Layout>
-                <Dashboard onNavigate={() => {}} searchQuery="" filterMode={null} />
+                <Dashboard onNavigate={() => { }} searchQuery="" filterMode={null} />
               </Layout>
             }
           />
@@ -78,16 +78,16 @@ function App() {
             path="/ask"
             element={
               <Layout>
-                <AskQuestion onNavigate={() => {}} />
+                <AskQuestion  />
               </Layout>
             }
           />
 
           <Route
-            path="/question/:id"
+            path="/question/:_id"
             element={
               <Layout>
-                <QuestionDetail questionId="" onNavigate={() => {}} />
+                <QuestionDetailWrapper />
               </Layout>
             }
           />
@@ -96,7 +96,7 @@ function App() {
             path="/tags"
             element={
               <Layout>
-                <Tags onNavigate={() => {}} onTagSelect={() => {}} />
+                <Tags onNavigate={() => { }} onTagSelect={() => { }} />
               </Layout>
             }
           />
@@ -105,7 +105,7 @@ function App() {
             path="/profile"
             element={
               <Layout>
-                <UserProfile onNavigate={() => {}} />
+                <UserProfile onNavigate={() => { }} />
               </Layout>
             }
           />
@@ -113,6 +113,23 @@ function App() {
         </Routes>
       </Router>
     </AuthProvider>
+  );
+}
+
+import { useParams, useNavigate as useRRNavigate } from 'react-router-dom';
+
+function QuestionDetailWrapper() {
+  const { _id } = useParams<{ _id: string }>();
+  const navigate = useRRNavigate();
+
+  return (
+    <QuestionDetail
+      _id={_id ?? ''}
+      onNavigate={(page: string, id?: string) => {
+        if (id) navigate(`/${page}/${id}`);
+        else navigate(`/${page}`);
+      }}
+    />
   );
 }
 
