@@ -63,6 +63,7 @@ export const QuestionDetail = ({ }: QuestionDetailProps) => {
       const res = await axios.get(Server + `Question/get/${_id}`);
       // Check if question exists and set state
       setQuestion(res.data.question || null);
+      console.log("Question data:", res.data.question);
       setQuestionComments(res.data.questionComments || []); // Safely default to []
       setAnswers(res.data.answers || []); // Safely default to []
     } catch (error) {

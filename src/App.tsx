@@ -1,4 +1,13 @@
-import { BrowserRouter as Router, Routes, Route, useNavigate,useParams, useNavigate as useRRNavigate } from 'react-router-dom';
+// src/App.tsx
+
+// --- CHANGE THIS LINE ---
+// From:
+// import { BrowserRouter as Router, Routes, Route, useNavigate,useParams, useNavigate as useRRNavigate } from 'react-router-dom';
+//
+// To (remove 'BrowserRouter as Router'):
+import { Routes, Route, useNavigate, useParams, useNavigate as useRRNavigate } from 'react-router-dom';
+// --- END CHANGE ---
+
 import { AuthProvider } from './contexts/AuthContext';
 import { Navbar } from './components/Navbar';
 import { Sidebar } from './components/Sidebar';
@@ -11,6 +20,7 @@ import { Tags } from './pages/Tags';
 import { UserProfile } from './pages/UserProfile';
 import { useAuth } from './contexts/AuthContext';
 
+// ... (Your 'Layout' function is perfect, no change needed) ...
 function Layout({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const { loading } = useAuth();
@@ -44,6 +54,8 @@ function Layout({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
+
+// ... (Your 'QuestionDetailWrapper' function is perfect, no change needed) ...
 function QuestionDetailWrapper() {
   const { _id } = useParams<{ _id: string }>();
   const navigate = useRRNavigate();
@@ -59,79 +71,76 @@ function QuestionDetailWrapper() {
   );
 }
 
+
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <Routes>
+      {/* <--- REMOVE THIS LINE --- <Router> */}
+      <Routes>
 
-          {/* Public Routes */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
+        {/* Public Routes */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
 
-          {/* Protected UI Layout */}
-          <Route
-            path="/"
-            element={
-              <Layout>
-                <Dashboard onNavigate={() => { }} searchQuery="" filterMode={null} />
-              </Layout>
-            }
-          />
+        {/* Protected UI Layout */}
+        <Route
+          path="/"
+          element={
+            <Layout>
+              <Dashboard onNavigate={() => { }} searchQuery="" filterMode={null} />
+            </Layout>
+          }
+        />
 
-          <Route
-            path="/dashboard"
-            element={
-              <Layout>
-                <Dashboard onNavigate={() => { }} searchQuery="" filterMode={null} />
-              </Layout>
-            }
-          />
+        <Route
+          path="/dashboard"
+          element={
+            <Layout>
+              <Dashboard onNavigate={() => { }} searchQuery="" filterMode={null} />
+            </Layout>
+          }
+        />
 
-          <Route
-            path="/ask"
-            element={
-              <Layout>
-                <AskQuestion  />
-              </Layout>
-            }
-          />
+        <Route
+          path="/ask"
+          element={
+            <Layout>
+              <AskQuestion />
+            </Layout>
+          }
+        />
 
-          <Route
-            path="/question/:_id"
-            element={
-              <Layout>
-                <QuestionDetailWrapper />
-              </Layout>
-            }
-          />
+        <Route
+          path="/question/:_id"
+          element={
+            <Layout>
+              <QuestionDetailWrapper />
+            </Layout>
+          }
+        />
 
-          <Route
-            path="/tags"
-            element={
-              <Layout>
-                <Tags onNavigate={() => { }} onTagSelect={() => { }} />
-              </Layout>
-            }
-          />
+        <Route
+          path="/tags"
+          element={
+            <Layout>
+              <Tags onNavigate={() => { }} onTagSelect={() => { }} />
+            </Layout>
+          }
+        />
 
-          <Route
-            path="/profile"
-            element={
-              <Layout>
-                <UserProfile onNavigate={() => { }} />
-              </Layout>
-            }
-          />
+        <Route
+          path="/profile"
+          element={
+            <Layout>
+              <UserProfile onNavigate={() => { }} />
+            </Layout>
+          }
+        />
 
-        </Routes>
-      </Router>
+      </Routes>
+      {/* <--- REMOVE THIS LINE --- </Router> */}
     </AuthProvider>
   );
 }
-
-
-
-
 
 export default App;

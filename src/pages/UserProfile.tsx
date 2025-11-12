@@ -57,6 +57,7 @@ export const UserProfile = ({ onNavigate }: UserProfileProps) => {
       // Your backend now provides everything
       setStats(res.data.stats);
       setQuestions(res.data.questions || []);
+      console.log('Fetched user data:', res.data.questions);
 
     } catch (error) {
       console.error('Error loading user data:', error);

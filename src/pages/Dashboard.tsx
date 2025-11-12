@@ -1,11 +1,88 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
-import { MessageSquare, Eye, ThumbsUp, ThumbsDown, Tag } from 'lucide-react';
+import {
+  MessageSquare,
+  Eye,
+  ThumbsUp,
+  ThumbsDown,
+  Tag,
+  ChevronLeft, // Icon for 'Previous'
+  ChevronRight, // Icon for 'Next'
+} from 'lucide-react';
 import { Card } from '../components/Card';
 import { formatDistanceToNow } from '../utils/date';
 import { Server } from '../Utills/Server';
 import { useNavigate } from 'react-router-dom';
 
+// --- PAGINATION HELPER LOGIC (Added) ---
+
+export const DOTS = '...';
+
+const range = (start: number, end: number) => {
+  let length = end - start + 1;
+  return Array.from({ length }, (_, idx) => idx + start);
+};
+
+interface PaginationHookProps {
+  totalPages: number;
+  siblingCount?: number;
+  currentPage: number;
+}
+
+export const usePagination = ({
+  totalPages,
+  siblingCount = 1, // Number of pages to show on each side of the current page
+  currentPage,
+}: PaginationHookProps) => {
+  const paginationRange = useMemo(() => {
+    // Pages to show: 1 (first) + 1 (last) + 1 (current) + 2*siblings + 2 (dots)
+    const totalPageNumbers = siblingCount + 5;
+
+    // Case 1: If total pages is less than what we want to show, just show all.
+    if (totalPageNumbers >= totalPages) {
+      return range(1, totalPages);
+    }
+
+    const leftSiblingIndex = Math.max(currentPage - siblingCount, 1);
+    const rightSiblingIndex = Math.min(
+      currentPage + siblingCount,
+      totalPages
+    );
+
+    const shouldShowLeftDots = leftSiblingIndex > 2;
+    const shouldShowRightDots = rightSiblingIndex < totalPages - 2;
+
+    const firstPageIndex = 1;
+    const lastPageIndex = totalPages;
+
+    // Case 2: No left dots, but right dots
+    if (!shouldShowLeftDots && shouldShowRightDots) {
+      let leftItemCount = 3 + 2 * siblingCount;
+      let leftRange = range(1, leftItemCount);
+      return [...leftRange, DOTS, totalPages];
+    }
+
+    // Case 3: Left dots, but no right dots
+    if (shouldShowLeftDots && !shouldShowRightDots) {
+      let rightItemCount = 3 + 2 * siblingCount;
+      let rightRange = range(totalPages - rightItemCount + 1, totalPages);
+      return [firstPageIndex, DOTS, ...rightRange];
+    }
+
+    // Case 4: Both left and right dots
+    if (shouldShowLeftDots && shouldShowRightDots) {
+      let middleRange = range(leftSiblingIndex, rightSiblingIndex);
+      return [firstPageIndex, DOTS, ...middleRange, DOTS, lastPageIndex];
+    }
+
+    // Fallback (shouldn't be reached)
+    return range(1, totalPages);
+  }, [totalPages, siblingCount, currentPage]);
+
+  return paginationRange;
+};
+
+// --- INTERFACES (Unchanged) ---
 interface DashboardProps {
   onNavigate: (page: string, id?: string) => void;
   searchQuery?: string;
@@ -26,62 +103,230 @@ interface QuestionWithStats {
   tags: { name: string }[];
 }
 
-export const Dashboard = ({  searchQuery, filterMode }: DashboardProps) => {
+// --- HELPER COMPONENT: Pagination UI (REPLACED) ---
+interface PaginationControlsProps {
+  currentPage: number;
+  totalPages: number;
+  itemsPerPage: number;
+  onPageChange: (page: number) => void;
+  onItemsPerPageChange: (size: number) => void;
+}
+
+const PaginationControls = ({
+  currentPage,
+  totalPages,
+  itemsPerPage,
+  onPageChange,
+  onItemsPerPageChange,
+}: PaginationControlsProps) => {
+  // Use the new hook
+  const paginationRange = usePagination({
+    currentPage,
+    totalPages,
+    siblingCount: 1, // You can change this
+  });
+
+  if (totalPages <= 1) {
+    return null; // Don't show pagination if there's only one page
+  }
+
+  const handleNext = () => {
+    onPageChange(currentPage + 1);
+  };
+
+  const handlePrevious = () => {
+    onPageChange(currentPage - 1);
+  };
+
+  return (
+    <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-8 py-4">
+      {/* Items per page selector */}
+      <div className="flex items-center gap-2 text-sm text-gray-600">
+        <label htmlFor="itemsPerPage" className="font-medium">
+          Show:
+        </label>
+        <select
+          id="itemsPerPage"
+          value={itemsPerPage}
+          onChange={(e) => onItemsPerPageChange(Number(e.target.value))}
+          className="px-2 py-1 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+        >
+          <option value={3}>3</option>
+          <option value={5}>5</option>
+          <option value={10}>10</option>
+        </select>
+        <span className="hidden sm:inline">per page</span>
+      </div>
+
+      {/* Pagination navigation */}
+      <nav aria-label="Pagination">
+        <ul className="flex items-center gap-1">
+          {/* Previous Button */}
+          <li>
+            <button
+              onClick={handlePrevious}
+              disabled={currentPage === 1}
+              className="flex items-center justify-center h-9 w-9 rounded-md bg-white text-gray-600 shadow-sm border border-gray-200 enabled:hover:bg-cyan-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              aria-label="Go to previous page"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+          </li>
+
+          {/* Page Number Buttons */}
+          {paginationRange?.map((pageNumber, index) => {
+            // If it's the DOTS (...)
+            if (pageNumber === DOTS) {
+              return (
+                <li
+                  key={index}
+                  className="flex items-end justify-center h-9 w-9 text-gray-500"
+                >
+                  &#8230;
+                </li>
+              );
+            }
+
+            // If it's a page number
+            const isActive = pageNumber === currentPage;
+            return (
+              <li key={index}>
+                <button
+                  onClick={() => onPageChange(pageNumber as number)}
+                  className={`flex items-center justify-center h-9 w-9 rounded-md font-medium text-sm transition-colors
+                    ${
+                      isActive
+                        ? 'bg-cyan-600 text-white shadow-md'
+                        : 'bg-white text-gray-600 shadow-sm border border-gray-200 hover:bg-cyan-50'
+                    }`}
+                  aria-current={isActive ? 'page' : undefined}
+                >
+                  {pageNumber}
+                </button>
+              </li>
+            );
+          })}
+
+          {/* Next Button */}
+          <li>
+            <button
+              onClick={handleNext}
+              disabled={currentPage === totalPages}
+              className="flex items-center justify-center h-9 w-9 rounded-md bg-white text-gray-600 shadow-sm border border-gray-200 enabled:hover:bg-cyan-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              aria-label="Go to next page"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  );
+};
+
+// --- MAIN DASHBOARD COMPONENT (Unchanged logic) ---
+export const Dashboard = ({ searchQuery, filterMode }: DashboardProps) => {
   const navigate = useNavigate();
 
-  const [questions, setQuestions] = useState<QuestionWithStats[]>([]);
+  // State for all questions fetched from API
+  const [allQuestions, setAllQuestions] = useState<QuestionWithStats[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // --- PAGINATION STATE ---
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(3); // Default 5
+
+  // --- DATA FETCHING ---
+  // Runs ONCE on mount to fetch all questions
   useEffect(() => {
-    loadQuestions();
-  }, [searchQuery, filterMode]);
-
- const loadQuestions = async () => {
-    setLoading(true);
-    try {
-      // Base GET request to your backend API
-      const response = await axios.get(Server + `question/getAll`, {
-        headers: {
-          'Cache-Control': 'no-cache',
-          Pragma: 'no-cache',
-        },
-      });
-      let data: QuestionWithStats[] = response.data.questions || [];
-      console.log('Fetched questions:', response.data.questions);
-
-      // --- REVISED FILTER LOGIC ---
-      if (filterMode === 'tag' && searchQuery) {
-        // 1. Prioritize Tag search if mode is 'tag'
-        const tagQuery = searchQuery.toLowerCase();
-        data = data.filter((item) =>
-          item.tags?.some((t) => t.name.toLowerCase() === tagQuery)
-        );
-      } else if (searchQuery) {
-        // 2. Fallback: If any other searchQuery exists, search title/description
-        const q = searchQuery.toLowerCase();
-        data = data.filter(
-          (item) =>
-            item.title.toLowerCase().includes(q) ||
-            item.description.toLowerCase().includes(q)
-        );
+    const loadQuestions = async () => {
+      setLoading(true);
+      try {
+        const response = await axios.get(Server + `question/getAll`, {
+          headers: {
+            'Cache-Control': 'no-cache',
+            Pragma: 'no-cache',
+          },
+        });
+        const data = response.data.questions || [];
+        console.log('Fetched questions:', data);
+        setAllQuestions(data); // Store all fetched questions
+      } catch (error) {
+        console.error('Error loading questions:', error);
+      } finally {
+        setLoading(false);
       }
-      // 3. If no searchQuery or filterMode, data remains unfiltered (shows all)
-      // --- END REVISED LOGIC ---
+    };
 
-      // Sort by createdAt (most recent first)
-      data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    loadQuestions();
+  }, []); // Empty dependency array means this runs only once
 
-      setQuestions(data);
-    } catch (error) {
-      console.error('Error loading questions:', error);
-    } finally {
-      setLoading(false);
+  // --- CLIENT-SIDE FILTERING & SORTING ---
+  // This recalculates only when allQuestions, searchQuery, or filterMode changes
+  const filteredQuestions = useMemo(() => {
+    let data: QuestionWithStats[] = [...allQuestions];
+
+    // 1. Filter
+    if (filterMode === 'tag' && searchQuery) {
+      const tagQuery = searchQuery.toLowerCase();
+      data = data.filter((item) =>
+        item.tags?.some((t) => t.name.toLowerCase() === tagQuery)
+      );
+    } else if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      data = data.filter(
+        (item) =>
+          item.title.toLowerCase().includes(q) ||
+          item.description.toLowerCase().includes(q)
+      );
     }
-  };
+
+    // 2. Sort
+    data.sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+
+    return data;
+  }, [allQuestions, searchQuery, filterMode]);
+
+  // --- RESET TO PAGE 1 ON FILTER/PAGE SIZE CHANGE ---
+  // If filters or page size change, reset to page 1
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, filterMode, itemsPerPage]);
+
+  // --- CLIENT-SIDE PAGINATION ---
+  // This calculates the slice for the current page
+  const paginatedQuestions = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredQuestions.slice(startIndex, endIndex);
+  }, [filteredQuestions, currentPage, itemsPerPage]);
+
+  // --- CALCULATIONS FOR UI ---
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredQuestions.length / itemsPerPage)
+  );
+
+  // --- HANDLERS ---
   const handleQuestionClick = (_id: string) => {
     navigate(`/question/${_id}`);
   };
 
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
+  const handleItemsPerPageChange = (size: number) => {
+    setItemsPerPage(size);
+    setCurrentPage(1); // Reset to page 1
+  };
+
+  // --- RENDER LOGIC ---
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-blue-50 to-purple-50 p-4">
@@ -97,13 +342,19 @@ export const Dashboard = ({  searchQuery, filterMode }: DashboardProps) => {
       <div className="max-w-7xl mx-auto pt-4">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">All Questions</h1>
-            <p className="text-gray-600">{questions.length} questions</p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              All Questions
+            </h1>
+            <p className="text-gray-600">
+              {/* Show total count from filtered list */}
+              {filteredQuestions.length} questions
+            </p>
           </div>
         </div>
 
         <div className="space-y-4">
-          {questions.length === 0 ? (
+          {/* Check if filtered list is empty */}
+          {filteredQuestions.length === 0 ? (
             <Card className="p-8 text-center">
               <p className="text-gray-600">
                 {searchQuery
@@ -112,14 +363,16 @@ export const Dashboard = ({  searchQuery, filterMode }: DashboardProps) => {
               </p>
             </Card>
           ) : (
-            questions.map((question) => (
+            // Map over the PAGINATED list
+            paginatedQuestions.map((question) => (
               <Card
                 key={question._id}
                 hover
                 className="p-6 cursor-pointer"
-            onClick={() => handleQuestionClick(question._id)}
+                onClick={() => handleQuestionClick(question._id)}
               >
                 <div className="flex gap-6">
+                  {/* Stats (Unchanged) */}
                   <div className="flex flex-col items-center gap-3 text-sm text-gray-600 min-w-[80px]">
                     <div className="flex items-center gap-1">
                       <ThumbsUp className="w-4 h-4 text-green-600" />
@@ -127,11 +380,15 @@ export const Dashboard = ({  searchQuery, filterMode }: DashboardProps) => {
                     </div>
                     <div className="flex items-center gap-1">
                       <ThumbsDown className="w-4 h-4 text-red-600" />
-                      <span className="font-medium">{question.vote_dislikes}</span>
+                      <span className="font-medium">
+                        {question.vote_dislikes}
+                      </span>
                     </div>
                     <div className="flex items-center gap-1">
                       <MessageSquare className="w-4 h-4" />
-                      <span className="font-medium">{question.answer_count}</span>
+                      <span className="font-medium">
+                        {question.answer_count}
+                      </span>
                     </div>
                     <div className="flex items-center gap-1">
                       <Eye className="w-4 h-4" />
@@ -139,16 +396,17 @@ export const Dashboard = ({  searchQuery, filterMode }: DashboardProps) => {
                     </div>
                   </div>
 
+                  {/* Content (Unchanged) */}
                   <div className="flex-1">
                     <h2
                       onClick={() => handleQuestionClick(question._id)}
-                      className="text-xl font-semibold text-gray-900 mb-2 hover:text-cyan-600 transition-colors">
+                      className="text-xl font-semibold text-gray-900 mb-2 hover:text-cyan-600 transition-colors"
+                    >
                       {question.title}
                     </h2>
                     <p className="text-gray-600 mb-4 line-clamp-2">
                       {question.description.substring(0, 200)}...
                     </p>
-
                     <div className="flex flex-wrap items-center gap-2 mb-3">
                       {question.tags.map((tag, idx) => (
                         <span
@@ -160,7 +418,6 @@ export const Dashboard = ({  searchQuery, filterMode }: DashboardProps) => {
                         </span>
                       ))}
                     </div>
-
                     <div className="flex items-center justify-between text-sm text-gray-500">
                       <span>
                         asked by{' '}
@@ -176,6 +433,18 @@ export const Dashboard = ({  searchQuery, filterMode }: DashboardProps) => {
             ))
           )}
         </div>
+
+        {/* --- PAGINATION UI (Will use the new attractive version) --- */}
+        {/* Only show pagination if there are questions */}
+        {filteredQuestions.length > 0 && (
+          <PaginationControls
+            currentPage={currentPage}
+            totalPages={totalPages}
+            itemsPerPage={itemsPerPage}
+            onPageChange={handlePageChange}
+            onItemsPerPageChange={handleItemsPerPageChange}
+          />
+        )}
       </div>
     </div>
   );
