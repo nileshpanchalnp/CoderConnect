@@ -4,6 +4,7 @@ import { Input } from '../components/Input';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 export const Login = () => {
   const navigate = useNavigate();
@@ -20,6 +21,7 @@ export const Login = () => {
 
     try {
       await signIn(email, password);
+      toast.success('Login successful!');
       navigate('/'); 
     } catch (err) {
       setError('Invalid email or password');

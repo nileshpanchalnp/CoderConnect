@@ -48,7 +48,7 @@ export const Navbar = ({ onSearch, onNavigate, currentPage }: NavbarProps) => {
               onClick={() => onNavigate('dashboard')}
               className="text-2xl font-bold bg-gradient-to-r from-cyan-500 to-blue-600 bg-clip-text text-transparent hover:scale-105 transition-transform"
             >
-              DevFlow
+              CoderConnect 
             </button>
 
             <div className="hidden md:flex items-center gap-4">

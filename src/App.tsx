@@ -1,13 +1,5 @@
-// src/App.tsx
 
-// --- CHANGE THIS LINE ---
-// From:
-// import { BrowserRouter as Router, Routes, Route, useNavigate,useParams, useNavigate as useRRNavigate } from 'react-router-dom';
-//
-// To (remove 'BrowserRouter as Router'):
 import { Routes, Route, useNavigate, useParams, useNavigate as useRRNavigate } from 'react-router-dom';
-// --- END CHANGE ---
-
 import { AuthProvider } from './contexts/AuthContext';
 import { Navbar } from './components/Navbar';
 import { Sidebar } from './components/Sidebar';
@@ -19,6 +11,8 @@ import { QuestionDetail } from './pages/QuestionDetail';
 import { Tags } from './pages/Tags';
 import { UserProfile } from './pages/UserProfile';
 import { useAuth } from './contexts/AuthContext';
+import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer } from 'react-toastify';
 
 // ... (Your 'Layout' function is perfect, no change needed) ...
 function Layout({ children }: { children: React.ReactNode }) {
@@ -137,7 +131,21 @@ function App() {
           }
         />
 
+       
       </Routes>
+          <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
+
       {/* <--- REMOVE THIS LINE --- </Router> */}
     </AuthProvider>
   );

@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ThumbsUp, ThumbsDown, MessageSquare, Eye, Tag, Trophy } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-// Note: Assuming Question, Answer, and Comment types are available globally or imported correctly.
-// Removed supabase import as it's not used for the final comment post logic.
+import { toast } from 'react-toastify';
 import { Question, Answer, Comment, Profile } from '../lib/supabase';
 import { Card } from '../components/Card';
 import { Button } from '../components/Button';
@@ -118,7 +117,7 @@ export const QuestionDetail = ({ }: QuestionDetailProps) => {
       author_id: user.id,
       content: answerContent.trim(),
     });
-
+    toast.success('Answer Create successful!');
     setAnswerContent("");
     loadQuestion();
   };
@@ -158,6 +157,7 @@ export const QuestionDetail = ({ }: QuestionDetailProps) => {
       // 3. Clear state and reload data on success
       setCommentContent('');
       setCommentTarget(null);
+       toast.success('comment Create successful!');
       loadQuestion();
 
     } catch (error) {

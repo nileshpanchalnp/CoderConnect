@@ -76,7 +76,7 @@ export const Sidebar = ({ currentPage, onNavigate }: SidebarProps) => {
               onClick={() => handleNavClick('dashboard')}
               className="text-2xl font-bold bg-gradient-to-r from-cyan-500 to-blue-600 bg-clip-text text-transparent hover:scale-105 transition-transform w-full text-left"
             >
-              DevFlow
+              CoderConnect 
             </button>
           </div>
 

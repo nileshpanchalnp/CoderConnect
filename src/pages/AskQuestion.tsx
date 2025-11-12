@@ -7,6 +7,7 @@ import { Card } from '../components/Card';
 import axios from 'axios';
 import { Server } from '../Utills/Server';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 
 export const AskQuestion = () => {
@@ -76,6 +77,7 @@ const handleSubmit = async (e: React.FormEvent) => {
     const createdId = res.data?.question?._id;
 
     if (createdId) {
+      toast.success('Question Create successful!');
       navigate(`/question/${createdId}`);
     } else {
       setError('Question created, but no ID returned from server.');

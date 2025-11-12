@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import axios from "axios";
 import { Server } from "../Utills/Server";
+import { toast } from 'react-toastify';
 
 axios.defaults.withCredentials = true; // send cookies with requests
 
@@ -65,6 +66,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signOut = async () => {
+    await toast.success('USer LogOut successful!');
     await axios.post(Server+`User/signout`);
     setUser(null);
   };
