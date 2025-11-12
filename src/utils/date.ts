@@ -1,9 +1,17 @@
-export const formatDistanceToNow = (dateString: string): string => {
-  const date = new Date(dateString);
-  const now = new Date();
-  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+export const formatDistanceToNow = (dateString?: string): string => {
+  if (!dateString) return 'invalid date';
 
-  const intervals = {
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return 'invalid date';
+
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+  const isFuture = diffInSeconds < 0;
+  const absSeconds = Math.abs(diffInSeconds);
+
+  if (absSeconds < 60) return 'just now';
+
+  const intervals: Record<string, number> = {
     year: 31536000,
     month: 2592000,
     week: 604800,
@@ -13,9 +21,10 @@ export const formatDistanceToNow = (dateString: string): string => {
   };
 
   for (const [unit, secondsInUnit] of Object.entries(intervals)) {
-    const interval = Math.floor(seconds / secondsInUnit);
-    if (interval >= 1) {
-      return `${interval} ${unit}${interval > 1 ? 's' : ''} ago`;
+    const count = Math.floor(absSeconds / secondsInUnit);
+    if (count >= 1) {
+      const suffix = isFuture ? 'from now' : 'ago';
+      return `${count} ${unit}${count > 1 ? 's' : ''} ${suffix}`;
     }
   }
 

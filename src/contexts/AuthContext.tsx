@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Load logged-in user profile on refresh
   const loadProfile = async () => {
     try {
-      const res = await axios.get(Server+`profile/me`);
+      const res = await axios.get(Server+`Profile/me`);
       setUser(res.data.user);
     } catch {
       setUser(null);
@@ -55,6 +55,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       username,
       display_name: displayName
     });
+    await signIn(email, password);
     await loadProfile();
   };
 

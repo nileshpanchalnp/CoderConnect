@@ -54,7 +54,7 @@ export const AskQuestion = () => {
     setTags(tags.filter((tag) => tag !== tagToRemove));
   };
 
- const handleSubmit = async (e: React.FormEvent) => {
+const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
   setError('');
 
@@ -65,21 +65,30 @@ export const AskQuestion = () => {
   setLoading(true);
 
   try {
-    const res = await axios.post(Server+`Question/create`, {
+    const res = await axios.post(Server + `Question/create`, {
       title,
       description,
       tags,
-      userId: user.id,   // sending logged in user id
+      userId: user.id, // logged-in user ID
     });
 
-    navigate('question', res.data.questionId);
-    
+    // ✅ Get the created question ID from response
+    const createdId = res.data?.question?._id;
+
+    if (createdId) {
+      navigate(`/question/${createdId}`);
+    } else {
+      setError('Question created, but no ID returned from server.');
+    }
+
   } catch (err: any) {
+    console.error("Error creating question:", err);
     setError(err.response?.data?.message || "Failed to create question");
   } finally {
     setLoading(false);
   }
 };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-blue-50 to-purple-50 p-4">

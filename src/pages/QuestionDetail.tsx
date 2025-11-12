@@ -65,7 +65,6 @@ export const QuestionDetail = ({ }: QuestionDetailProps) => {
       setQuestion(res.data.question || null);
       setQuestionComments(res.data.questionComments || []); // Safely default to []
       setAnswers(res.data.answers || []); // Safely default to []
-
     } catch (error) {
       console.error("Error loading question:", error);
     } finally {
@@ -224,7 +223,7 @@ export const QuestionDetail = ({ }: QuestionDetailProps) => {
                   <Eye className="w-4 h-4" />
                   {question.views} views
                 </span>
-                <span>asked {formatDistanceToNow(question.created_at)}</span>
+                <span>asked {formatDistanceToNow(question.createdAt)}</span>
               </div>
 
               <div className="prose max-w-none mb-6">
@@ -239,7 +238,7 @@ export const QuestionDetail = ({ }: QuestionDetailProps) => {
                     className="inline-flex items-center gap-1 px-3 py-1 bg-cyan-100 text-cyan-700 rounded-full text-sm font-medium"
                   >
                     <Tag className="w-3 h-3" />
-                    {tag}
+                    {tag.name}
                   </span>
                 ))}
               </div>
@@ -276,7 +275,7 @@ export const QuestionDetail = ({ }: QuestionDetailProps) => {
                       <p className="text-sm text-gray-700">{comment.content}</p>
                       <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
                         <span className="font-medium">{comment.author_id?.display_name}</span>
-                        <span>{formatDistanceToNow(comment.created_at)}</span>
+                        <span>{formatDistanceToNow(comment.createdAt)}</span>
                       </div>
                     </div>
                   ))}
@@ -355,7 +354,7 @@ export const QuestionDetail = ({ }: QuestionDetailProps) => {
                           {answer.author_id?.reputation}
                         </span>
                         <span className="text-xs text-gray-500">
-                          {formatDistanceToNow(answer.created_at)}
+                          {formatDistanceToNow(answer.createdAt)}
                         </span>
                       </div>
                       {!commentTarget && (
@@ -380,7 +379,7 @@ export const QuestionDetail = ({ }: QuestionDetailProps) => {
                               <span className="font-medium">
                                 {comment.author_id?.display_name}
                               </span>
-                              <span>{formatDistanceToNow(comment.created_at)}</span>
+                              <span>{formatDistanceToNow(comment.createdAt)}</span>
                             </div>
                           </div>
                         ))}

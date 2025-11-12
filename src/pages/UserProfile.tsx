@@ -1,13 +1,25 @@
 import { useEffect, useState } from 'react';
 import { Trophy, FileQuestion, MessageSquare, User as UserIcon } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { supabase, Question } from '../lib/supabase';
+// import { supabase, Question } from '../lib/supabase'; // ⛔️ REMOVE SUPABASE
+import axios from 'axios'; // ✅ ADD AXIOS
+import { Server } from '../Utills/Server'; // ✅ ADD SERVER
 import { Card } from '../components/Card';
 import { Button } from '../components/Button';
 import { formatDistanceToNow } from '../utils/date';
+import { useNavigate } from 'react-router-dom';
 
 interface UserProfileProps {
   onNavigate: (page: string, id?: string) => void;
+}
+
+// ✅ DEFINE THE QUESTION TYPE TO MATCH YOUR BACKEND
+interface Question {
+  _id: string; // Mongoose uses _id
+  title: string;
+  description: string;
+  views: number;
+  createdAt: string;
 }
 
 interface Stats {
@@ -17,6 +29,7 @@ interface Stats {
 }
 
 export const UserProfile = ({ onNavigate }: UserProfileProps) => {
+    const navigate = useNavigate();
   const { user } = useAuth();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [stats, setStats] = useState<Stats>({
@@ -32,39 +45,19 @@ export const UserProfile = ({ onNavigate }: UserProfileProps) => {
     }
   }, [user]);
 
+  // ✅ REWRITE loadUserData TO USE AXIOS
   const loadUserData = async () => {
     if (!user) return;
 
     setLoading(true);
     try {
-      const { data: userQuestions } = await supabase
-        .from('questions')
-        .select('*')
-        .eq('author_id', user.id)
-        .order('created_at', { ascending: false });
+      // Make one single call to your backend
+      const res = await axios.get(Server + `profile/me`);
 
-      setQuestions(userQuestions || []);
+      // Your backend now provides everything
+      setStats(res.data.stats);
+      setQuestions(res.data.questions || []);
 
-      const { count: questionsCount } = await supabase
-        .from('questions')
-        .select('*', { count: 'exact', head: true })
-        .eq('author_id', user.id);
-
-      const { count: answersCount } = await supabase
-        .from('answers')
-        .select('*', { count: 'exact', head: true })
-        .eq('author_id', user.id);
-
-      const { count: commentsCount } = await supabase
-        .from('comments')
-        .select('*', { count: 'exact', head: true })
-        .eq('author_id', user.id);
-
-      setStats({
-        questionsAsked: questionsCount || 0,
-        answersPosted: answersCount || 0,
-        commentsPosted: commentsCount || 0,
-      });
     } catch (error) {
       console.error('Error loading user data:', error);
     } finally {
@@ -73,6 +66,7 @@ export const UserProfile = ({ onNavigate }: UserProfileProps) => {
   };
 
   if (!user) {
+    // ... (no changes to this return block)
     return (
       <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-blue-50 to-purple-50 flex items-center justify-center p-4">
         <Card className="p-8 text-center">
@@ -88,7 +82,12 @@ export const UserProfile = ({ onNavigate }: UserProfileProps) => {
     );
   }
 
+    const handleQuestionClick = (_id: string) => {
+    navigate(`/question/${_id}`);
+  };
+
   if (loading) {
+     // ... (no changes to this return block)
     return (
       <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-blue-50 to-purple-50 p-4">
         <div className="max-w-6xl mx-auto pt-8">
@@ -101,6 +100,7 @@ export const UserProfile = ({ onNavigate }: UserProfileProps) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-blue-50 to-purple-50 p-4">
       <div className="max-w-6xl mx-auto pt-8">
+        {/* ... (no changes to Card block) ... */}
         <Card className="p-8 mb-6">
           <div className="flex items-start gap-6">
             <div className="p-6 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-full">
@@ -121,7 +121,8 @@ export const UserProfile = ({ onNavigate }: UserProfileProps) => {
             </div>
           </div>
         </Card>
-
+        
+        {/* ... (no changes to stats grid) ... */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <Card className="p-6">
             <div className="flex items-center gap-3">
@@ -136,7 +137,6 @@ export const UserProfile = ({ onNavigate }: UserProfileProps) => {
               </div>
             </div>
           </Card>
-
           <Card className="p-6">
             <div className="flex items-center gap-3">
               <div className="p-3 bg-blue-100 rounded-lg">
@@ -150,7 +150,6 @@ export const UserProfile = ({ onNavigate }: UserProfileProps) => {
               </div>
             </div>
           </Card>
-
           <Card className="p-6">
             <div className="flex items-center gap-3">
               <div className="p-3 bg-purple-100 rounded-lg">
@@ -169,6 +168,7 @@ export const UserProfile = ({ onNavigate }: UserProfileProps) => {
         <div>
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Your Questions</h2>
           {questions.length === 0 ? (
+            // ... (no changes to this card) ...
             <Card className="p-8 text-center">
               <p className="text-gray-600 mb-4">You haven't asked any questions yet</p>
               <Button onClick={() => onNavigate('ask')}>Ask Your First Question</Button>
@@ -177,12 +177,14 @@ export const UserProfile = ({ onNavigate }: UserProfileProps) => {
             <div className="space-y-4">
               {questions.map((question) => (
                 <Card
-                  key={question.id}
+                  key={question._id} // ✅ CHANGE to _id
                   hover
                   className="p-6 cursor-pointer"
-                  onClick={() => onNavigate('question', question.id)}
+                  
                 >
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2 hover:text-cyan-600 transition-colors">
+                  <h3 
+                  onClick={() => handleQuestionClick(question._id)}
+                  className="text-xl font-semibold text-gray-900 mb-2 hover:text-cyan-600 transition-colors">
                     {question.title}
                   </h3>
                   <p className="text-gray-600 mb-3 line-clamp-2">
@@ -190,7 +192,7 @@ export const UserProfile = ({ onNavigate }: UserProfileProps) => {
                   </p>
                   <div className="flex items-center justify-between text-sm text-gray-500">
                     <span>{question.views} views</span>
-                    <span>{formatDistanceToNow(question.created_at)}</span>
+                    <span>{formatDistanceToNow(question.createdAt)}</span>
                   </div>
                 </Card>
               ))}

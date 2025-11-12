@@ -22,7 +22,7 @@ export const Signup = () => {
 
     try {
       await signUp(email, password, username, displayName);
-      navigate('/signup'); // ✅ THIS WILL NOW WORK
+      navigate('/'); 
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);

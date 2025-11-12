@@ -18,7 +18,7 @@ interface QuestionWithStats {
   _id: string;
   title: string;
   description: string;
-  created_at: string;
+  createdAt: string;
   author_id: { username: string; display_name: string; reputation: number };
   answer_count: number;
   vote_likes: number;
@@ -36,7 +36,7 @@ export const Dashboard = ({  searchQuery, filterMode }: DashboardProps) => {
     loadQuestions();
   }, [searchQuery, filterMode]);
 
-  const loadQuestions = async () => {
+ const loadQuestions = async () => {
     setLoading(true);
     try {
       // Base GET request to your backend API
@@ -48,8 +48,16 @@ export const Dashboard = ({  searchQuery, filterMode }: DashboardProps) => {
       });
       let data: QuestionWithStats[] = response.data.questions || [];
       console.log('Fetched questions:', response.data.questions);
-      // Apply filters locally (same logic as before)
-      if (filterMode === 'search' && searchQuery) {
+
+      // --- REVISED FILTER LOGIC ---
+      if (filterMode === 'tag' && searchQuery) {
+        // 1. Prioritize Tag search if mode is 'tag'
+        const tagQuery = searchQuery.toLowerCase();
+        data = data.filter((item) =>
+          item.tags?.some((t) => t.name.toLowerCase() === tagQuery)
+        );
+      } else if (searchQuery) {
+        // 2. Fallback: If any other searchQuery exists, search title/description
         const q = searchQuery.toLowerCase();
         data = data.filter(
           (item) =>
@@ -57,15 +65,11 @@ export const Dashboard = ({  searchQuery, filterMode }: DashboardProps) => {
             item.description.toLowerCase().includes(q)
         );
       }
+      // 3. If no searchQuery or filterMode, data remains unfiltered (shows all)
+      // --- END REVISED LOGIC ---
 
-      if (filterMode === 'tag' && searchQuery) {
-        const tagQuery = searchQuery.toLowerCase();
-        data = data.filter((item) =>
-          item.tags?.some((t) => t.name.toLowerCase() === tagQuery)
-        );
-      }
-      // Sort by created_at (most recent first)
-      data.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      // Sort by createdAt (most recent first)
+      data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
       setQuestions(data);
     } catch (error) {
@@ -113,7 +117,7 @@ export const Dashboard = ({  searchQuery, filterMode }: DashboardProps) => {
                 key={question._id}
                 hover
                 className="p-6 cursor-pointer"
-              // onClick={() => onNavigate(`/question/${question.id}`)}
+            onClick={() => handleQuestionClick(question._id)}
               >
                 <div className="flex gap-6">
                   <div className="flex flex-col items-center gap-3 text-sm text-gray-600 min-w-[80px]">
@@ -152,7 +156,7 @@ export const Dashboard = ({  searchQuery, filterMode }: DashboardProps) => {
                           className="inline-flex items-center gap-1 px-3 py-1 bg-cyan-100 text-cyan-700 rounded-full text-sm font-medium"
                         >
                           <Tag className="w-3 h-3" />
-                          {tag}
+                          {tag.name}
                         </span>
                       ))}
                     </div>
@@ -164,7 +168,7 @@ export const Dashboard = ({  searchQuery, filterMode }: DashboardProps) => {
                           {question.author_id?.display_name}
                         </span>
                       </span>
-                      <span>{formatDistanceToNow(question.created_at)}</span>
+                      <span>{formatDistanceToNow(question.createdAt)}</span>
                     </div>
                   </div>
                 </div>

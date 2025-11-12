@@ -15,7 +15,7 @@ export type Profile = {
   display_name: string;
   avatar_url?: string;
   reputation: number;
-  created_at: string;
+  createdAt: string;
   updated_at: string;
   author_id: string;
 };
@@ -26,7 +26,7 @@ export type Question = {
   description: string;
   author_id: string;
   views: number;
-  created_at: string;
+  createdAt: string;
   updated_at: string;
   profiles?: Profile;
 };
@@ -36,7 +36,7 @@ export type Answer = {
   question_id: string;
   author_id: string;
   content: string;
-  created_at: string;
+  createdAt: string;
   updated_at: string;
   profiles?: Profile;
 };
@@ -47,14 +47,14 @@ export type Comment = {
   author_id: string;
   question_id?: string;
   answer_id?: string;
-  created_at: string;
+  createdAt: string;
   profiles?: Profile;
 };
 
 export type Tag = {
   id: string;
   name: string;
-  created_at: string;
+  createdAt: string;
 };
 
 export type Vote = {
@@ -63,5 +63,5 @@ export type Vote = {
   question_id?: string;
   answer_id?: string;
   vote_type: 'like' | 'dislike';
-  created_at: string;
+  createdAt: string;
 };

@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate,useParams, useNavigate as useRRNavigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { Navbar } from './components/Navbar';
 import { Sidebar } from './components/Sidebar';
@@ -42,6 +42,20 @@ function Layout({ children }: { children: React.ReactNode }) {
         </main>
       </div>
     </div>
+  );
+}
+function QuestionDetailWrapper() {
+  const { _id } = useParams<{ _id: string }>();
+  const navigate = useRRNavigate();
+
+  return (
+    <QuestionDetail
+      _id={_id ?? ''}
+      onNavigate={(page: string, id?: string) => {
+        if (id) navigate(`/${page}/${id}`);
+        else navigate(`/${page}`);
+      }}
+    />
   );
 }
 
@@ -116,21 +130,8 @@ function App() {
   );
 }
 
-import { useParams, useNavigate as useRRNavigate } from 'react-router-dom';
 
-function QuestionDetailWrapper() {
-  const { _id } = useParams<{ _id: string }>();
-  const navigate = useRRNavigate();
 
-  return (
-    <QuestionDetail
-      _id={_id ?? ''}
-      onNavigate={(page: string, id?: string) => {
-        if (id) navigate(`/${page}/${id}`);
-        else navigate(`/${page}`);
-      }}
-    />
-  );
-}
+
 
 export default App;
