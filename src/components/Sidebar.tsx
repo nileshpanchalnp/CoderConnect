@@ -70,7 +70,7 @@ export const Sidebar = ({ currentPage, onNavigate }: SidebarProps) => {
           isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         }`}
       >
-        <div className="h-full md:h-screen flex flex-col">
+        <div className=" h-full md:h-screen flex flex-col">
           <div className="pt-24 md:pt-6 px-6 pb-6 border-b border-gray-200">
             <button
               onClick={() => handleNavClick('dashboard')}

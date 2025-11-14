@@ -1,4 +1,3 @@
-
 import { Routes, Route, useNavigate, useParams, useNavigate as useRRNavigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { Navbar } from './components/Navbar';
@@ -14,8 +13,7 @@ import { useAuth } from './contexts/AuthContext';
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from 'react-toastify';
 
-// ... (Your 'Layout' function is perfect, no change needed) ...
-function Layout({ children }: { children: React.ReactNode }) {
+function Layout({ children, currentPage }: { children: React.ReactNode; currentPage: string }) {
   const navigate = useNavigate();
   const { loading } = useAuth();
 
@@ -38,9 +36,11 @@ function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar onNavigate={handleNavigation} onSearch={handleSearch} currentPage="" />
+      <Navbar onNavigate={handleNavigation} onSearch={handleSearch} currentPage={currentPage} />
+
       <div className="flex flex-1">
-        <Sidebar currentPage="" onNavigate={handleNavigation} />
+        <Sidebar currentPage={currentPage} onNavigate={handleNavigation} />
+
         <main className="flex-1 w-full md:w-auto">
           {children}
         </main>
@@ -49,7 +49,6 @@ function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
-// ... (Your 'QuestionDetailWrapper' function is perfect, no change needed) ...
 function QuestionDetailWrapper() {
   const { _id } = useParams<{ _id: string }>();
   const navigate = useRRNavigate();
@@ -65,22 +64,19 @@ function QuestionDetailWrapper() {
   );
 }
 
-
 function App() {
   return (
     <AuthProvider>
-      {/* <--- REMOVE THIS LINE --- <Router> */}
       <Routes>
-
-        {/* Public Routes */}
+        {/* Public */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
 
-        {/* Protected UI Layout */}
+        {/* Dashboard */}
         <Route
           path="/"
           element={
-            <Layout>
+            <Layout currentPage="dashboard">
               <Dashboard onNavigate={() => { }} searchQuery="" filterMode={null} />
             </Layout>
           }
@@ -89,64 +85,54 @@ function App() {
         <Route
           path="/dashboard"
           element={
-            <Layout>
+            <Layout currentPage="dashboard">
               <Dashboard onNavigate={() => { }} searchQuery="" filterMode={null} />
             </Layout>
           }
         />
 
+        {/* Ask */}
         <Route
           path="/ask"
           element={
-            <Layout>
+            <Layout currentPage="ask">
               <AskQuestion />
             </Layout>
           }
         />
 
+        {/* Question Detail */}
         <Route
           path="/question/:_id"
           element={
-            <Layout>
+            <Layout currentPage="question">
               <QuestionDetailWrapper />
             </Layout>
           }
         />
 
+        {/* Tags */}
         <Route
           path="/tags"
           element={
-            <Layout>
+            <Layout currentPage="tags">
               <Tags onNavigate={() => { }} onTagSelect={() => { }} />
             </Layout>
           }
         />
 
+        {/* Profile */}
         <Route
           path="/profile"
           element={
-            <Layout>
+            <Layout currentPage="profile">
               <UserProfile onNavigate={() => { }} />
             </Layout>
           }
         />
-
-       
       </Routes>
-          <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
 
-      {/* <--- REMOVE THIS LINE --- </Router> */}
+      <ToastContainer />
     </AuthProvider>
   );
 }

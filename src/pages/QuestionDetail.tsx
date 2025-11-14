@@ -76,7 +76,7 @@ export const QuestionDetail = ({ }: QuestionDetailProps) => {
     // Assuming 'user' is the state variable holding the authenticated user object.
     // The 'user' check is good for ensuring authentication before proceeding.
     if (!user) {
-      navigate("/login");
+      toast.error('Please log in before voting.');
       return;
     }
 
@@ -104,7 +104,6 @@ export const QuestionDetail = ({ }: QuestionDetailProps) => {
 
     } catch (error) {
       console.error(`Error voting on ${targetType}:`, error);
-      // Optional: Add some user feedback here (e.g., a toast notification)
     }
   };
 
@@ -124,6 +123,10 @@ export const QuestionDetail = ({ }: QuestionDetailProps) => {
 
   const handlePostComment = async (e: React.FormEvent) => {
     e.preventDefault();
+     if (!user) {
+      toast.error('Please log in before Comment.');
+      return;
+    }
     if (!user || !commentContent.trim() || !commentTarget) return;
 
     const content = commentContent.trim();
@@ -145,8 +148,6 @@ export const QuestionDetail = ({ }: QuestionDetailProps) => {
 
     data = {
       content: content,
-      // Your backend is set up to read the user ID from req.user._id, 
-      // so sending user.id here is unnecessary but harmless if the backend ignores it.
       author_id: user.id
     };
 

@@ -1,14 +1,22 @@
 import { useEffect, useState } from 'react';
 import { Tag as TagIcon, FileQuestion } from 'lucide-react';
-import { supabase, Tag } from '../lib/supabase';
 import { Card } from '../components/Card';
+import axios from 'axios'; // 1. Import axios
+import { Server } from '../Utills/Server';
+
+// NOTE: Make sure you have your axios base URL and credentials set globally
+// in your main app file (like App.tsx or index.tsx)
+// axios.defaults.baseURL = 'http://localhost:5000/api'; // Your backend URL
+// axios.defaults.withCredentials = true;
 
 interface TagsProps {
   onNavigate: (page: string) => void;
   onTagSelect: (tag: string) => void;
 }
 
-interface TagWithCount extends Tag {
+// 2. This interface now matches our new API response
+interface TagWithCount {
+  name: string;
   question_count: number;
 }
 
@@ -20,31 +28,17 @@ export const Tags = ({ onTagSelect }: TagsProps) => {
     loadTags();
   }, []);
 
+  // 3. This function is updated to use axios
   const loadTags = async () => {
     setLoading(true);
     try {
-      const { data: tagsData, error } = await supabase
-        .from('tags')
-        .select('*')
-        .order('name', { ascending: true });
+      // 4. Call your new backend API endpoint
+      // Adjust the URL if your route is different (e.g., '/questions/tags')
+      const { data } = await axios.get<TagWithCount[]>(Server +'Question/tags');
 
-      if (error) throw error;
-
-      const tagsWithCount = await Promise.all(
-        (tagsData || []).map(async (tag) => {
-          const { count } = await supabase
-            .from('question_tags')
-            .select('*', { count: 'exact', head: true })
-            .eq('tag_id', tag.id);
-
-          return {
-            ...tag,
-            question_count: count || 0,
-          };
-        })
-      );
-
-      setTags(tagsWithCount.filter((t) => t.question_count > 0));
+      // 5. Set the state with the data from your API
+      // The aggregation already filters out tags with 0 questions
+      setTags(data);
     } catch (error) {
       console.error('Error loading tags:', error);
     } finally {
@@ -71,9 +65,9 @@ export const Tags = ({ onTagSelect }: TagsProps) => {
       <div className="max-w-6xl mx-auto pt-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Tags</h1>
-          <p className="text-gray-600">
+          {/* <p className="text-gray-600">
             Browse questions by tag. Click on a tag to see all related questions.
-          </p>
+          </p> */}
         </div>
 
         {tags.length === 0 ? (
@@ -82,9 +76,10 @@ export const Tags = ({ onTagSelect }: TagsProps) => {
           </Card>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {/* 6. Update map to use 'tag.name' as the key */}
             {tags.map((tag) => (
               <Card
-                key={tag.id}
+                key={tag.name} 
                 hover
                 className="p-6 cursor-pointer"
                 onClick={() => handleTagClick(tag.name)}
