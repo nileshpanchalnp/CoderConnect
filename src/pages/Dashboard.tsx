@@ -194,10 +194,9 @@ const PaginationControls = ({
                 <button
                   onClick={() => onPageChange(pageNumber as number)}
                   className={`flex items-center justify-center h-9 w-9 rounded-md font-medium text-sm transition-colors
-                    ${
-                      isActive
-                        ? 'bg-cyan-600 text-white shadow-md'
-                        : 'bg-white text-gray-600 shadow-sm border border-gray-200 hover:bg-cyan-50'
+                    ${isActive
+                      ? 'bg-cyan-600 text-white shadow-md'
+                      : 'bg-white text-gray-600 shadow-sm border border-gray-200 hover:bg-cyan-50'
                     }`}
                   aria-current={isActive ? 'page' : undefined}
                 >
@@ -224,19 +223,14 @@ const PaginationControls = ({
   );
 };
 
-// --- MAIN DASHBOARD COMPONENT (Unchanged logic) ---
 export const Dashboard = ({ searchQuery, filterMode }: DashboardProps) => {
   const navigate = useNavigate();
 
-  // State for all questions fetched from API
   const [allQuestions, setAllQuestions] = useState<QuestionWithStats[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // --- PAGINATION STATE ---
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(3); // Default 5
 
-  // --- DATA FETCHING ---
   // Runs ONCE on mount to fetch all questions
   useEffect(() => {
     const loadQuestions = async () => {
@@ -310,7 +304,6 @@ export const Dashboard = ({ searchQuery, filterMode }: DashboardProps) => {
     Math.ceil(filteredQuestions.length / itemsPerPage)
   );
 
-  // --- HANDLERS ---
   const handleQuestionClick = (_id: string) => {
     navigate(`/question/${_id}`);
   };
@@ -323,7 +316,7 @@ export const Dashboard = ({ searchQuery, filterMode }: DashboardProps) => {
 
   const handleItemsPerPageChange = (size: number) => {
     setItemsPerPage(size);
-    setCurrentPage(1); // Reset to page 1
+    setCurrentPage(1);
   };
 
   // --- RENDER LOGIC ---
@@ -346,7 +339,6 @@ export const Dashboard = ({ searchQuery, filterMode }: DashboardProps) => {
               All Questions
             </h1>
             <p className="text-gray-600">
-              {/* Show total count from filtered list */}
               {filteredQuestions.length} questions
             </p>
           </div>
@@ -365,76 +357,76 @@ export const Dashboard = ({ searchQuery, filterMode }: DashboardProps) => {
           ) : (
             // Map over the PAGINATED list
             paginatedQuestions.map((question) => (
-              <Card
-                key={question._id}
-                hover
-                className="p-6 cursor-pointer"
-                onClick={() => handleQuestionClick(question._id)}
-              >
-                <div className="flex gap-6">
-                  {/* Stats (Unchanged) */}
-                  <div className="flex flex-col items-center gap-3 text-sm text-gray-600 min-w-[80px]">
-                    <div className="flex items-center gap-1">
-                      <ThumbsUp className="w-4 h-4 text-green-600" />
-                      <span className="font-medium">{question.vote_likes}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <ThumbsDown className="w-4 h-4 text-red-600" />
-                      <span className="font-medium">
-                        {question.vote_dislikes}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <MessageSquare className="w-4 h-4" />
-                      <span className="font-medium">
-                        {question.answer_count}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Eye className="w-4 h-4" />
-                      <span className="font-medium">{question.views}</span>
-                    </div>
-                  </div>
+              <Card key={question._id}>
+                <div
+                  className="p-6 cursor-pointer hover:shadow-md transition-all rounded-2xl"
+                   onClick={() => handleQuestionClick(question._id)}
+                >
+                  <div className="flex gap-6">
 
-                  {/* Content (Unchanged) */}
-                  <div className="flex-1">
-                    <h2
-                      onClick={() => handleQuestionClick(question._id)}
-                      className="text-xl font-semibold text-gray-900 mb-2 hover:text-cyan-600 transition-colors"
-                    >
-                      {question.title}
-                    </h2>
-                    <p className="text-gray-600 mb-4 line-clamp-2">
-                      {question.description.substring(0, 200)}...
-                    </p>
-                    <div className="flex flex-wrap items-center gap-2 mb-3">
-                      {question.tags.map((tag, idx) => (
-                        <span
-                          key={idx}
-                          className="inline-flex items-center gap-1 px-3 py-1 bg-cyan-100 text-cyan-700 rounded-full text-sm font-medium"
-                        >
-                          <Tag className="w-3 h-3" />
-                          {tag.name}
-                        </span>
-                      ))}
+                    {/* Stats */}
+                    <div className="flex flex-col items-center gap-3 text-sm text-gray-600 min-w-[80px]">
+                      <div className="flex items-center gap-1">
+                        <ThumbsUp className="w-4 h-4 text-green-600" />
+                        <span className="font-medium">{question.vote_likes}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <ThumbsDown className="w-4 h-4 text-red-600" />
+                        <span className="font-medium">{question.vote_dislikes}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <MessageSquare className="w-4 h-4" />
+                        <span className="font-medium">{question.answer_count}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Eye className="w-4 h-4" />
+                        <span className="font-medium">{question.views}</span>
+                      </div>
                     </div>
-                    <div className="flex items-center justify-between text-sm text-gray-500">
-                      <span>
-                        asked by{' '}
-                        <span className="font-medium text-gray-700">
-                          {question.author_id?.display_name}
+
+                    {/* Content */}
+                    <div className="flex-1">
+                      <h2
+                       
+                        className="text-xl font-semibold text-gray-900 mb-2 hover:text-cyan-600 transition-colors"
+                      >
+                        {question.title}
+                      </h2>
+
+                      <p className="text-gray-600 mb-4 line-clamp-2">
+                        {question.description.substring(0, 200)}…
+                      </p>
+
+                      <div className="flex flex-wrap items-center gap-2 mb-3">
+                        {question.tags.map((tag, idx) => (
+                          <span
+                            key={idx}
+                            className="inline-flex items-center gap-1 px-3 py-1 bg-cyan-100 text-cyan-700 rounded-full text-sm font-medium"
+                          >
+                            <Tag className="w-3 h-3" />
+                            {tag.name}
+                          </span>
+                        ))}
+                      </div>
+
+                      <div className="flex items-center justify-between text-sm text-gray-500">
+                        <span>
+                          asked by{" "}
+                          <span className="font-medium text-gray-700">
+                            {question.author_id?.display_name}
+                          </span>
                         </span>
-                      </span>
-                      <span>{formatDistanceToNow(question.createdAt)}</span>
+                        <span>{formatDistanceToNow(question.createdAt)}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
               </Card>
+
             ))
           )}
         </div>
 
-        {/* --- PAGINATION UI (Will use the new attractive version) --- */}
         {/* Only show pagination if there are questions */}
         {filteredQuestions.length > 0 && (
           <PaginationControls
