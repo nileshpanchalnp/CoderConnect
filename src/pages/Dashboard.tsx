@@ -229,7 +229,7 @@ export const Dashboard = ({ searchQuery, filterMode }: DashboardProps) => {
   const [allQuestions, setAllQuestions] = useState<QuestionWithStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(3); // Default 5
+  const [itemsPerPage, setItemsPerPage] = useState(3); 
 
   // Runs ONCE on mount to fetch all questions
   useEffect(() => {
