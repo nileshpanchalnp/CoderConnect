@@ -1,5 +1,5 @@
-import { Routes, Route, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { AuthProvider, useAuth } from './contexts/AuthContext'; // Adjust path if needed
+import { Routes, Route, useNavigate, useParams, useSearchParams, useLocation } from 'react-router-dom'; // 1. Import useLocation
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Navbar } from './components/Navbar';
 import { Sidebar } from './components/Sidebar';
 import { Login } from './pages/Login';
@@ -15,14 +15,17 @@ import { ToastContainer } from 'react-toastify';
 // --- LAYOUT COMPONENT ---
 function Layout({ children, currentPage }: { children: React.ReactNode; currentPage: string }) {
   const navigate = useNavigate();
+  const location = useLocation(); // 2. Get current location
   const { loading } = useAuth();
 
-  // 1. This function updates the URL when you type in Navbar
   const handleSearch = (query: string) => {
-    if (!query.trim()) {
-      navigate('/dashboard'); // Clear search
-    } else {
+    if (query.trim()) {
+      // If user types something, always go to dashboard search results
       navigate(`/dashboard?search=${encodeURIComponent(query)}`);
+    } else {
+      if (location.pathname === '/dashboard' || location.pathname === '/') {
+        navigate('/dashboard'); 
+      }
     }
   };
 
@@ -37,7 +40,6 @@ function Layout({ children, currentPage }: { children: React.ReactNode; currentP
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Pass handleSearch to Navbar */}
       <Navbar onNavigate={handleNavigation} onSearch={handleSearch} currentPage={currentPage} />
       <div className="flex flex-1">
         <Sidebar currentPage={currentPage} onNavigate={handleNavigation} />
@@ -49,16 +51,14 @@ function Layout({ children, currentPage }: { children: React.ReactNode; currentP
   );
 }
 
-// --- DASHBOARD WRAPPER (THE FIX) ---
-// This component reads the URL ?search=xyz or ?tag=xyz and passes it to Dashboard
+// --- DASHBOARD WRAPPER ---
 function DashboardWrapper() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams(); // <--- READ URL PARAMS
+  const [searchParams] = useSearchParams();
   
   const searchQuery = searchParams.get('search');
   const tagQuery = searchParams.get('tag');
 
-  // Determine logic: Tag takes priority, then Search, then null
   let currentSearch = '';
   let filterMode: 'search' | 'tag' | null = null;
 
@@ -81,15 +81,14 @@ function DashboardWrapper() {
 
 // --- QUESTION WRAPPER ---
 function QuestionDetailWrapper() {
-  const { _id } = useParams<{ _id: string }>();
+  // We don't need to grab _id here if QuestionDetail uses useParams, 
+  // but keeping the wrapper is fine for clean props.
   const navigate = useNavigate();
 
   return (
     <QuestionDetail
-      // Remove _id prop if you are using useParams inside QuestionDetail, 
-      // otherwise keep it here. Based on your previous code, you use useParams inside.
       onNavigate={(page: string, id?: string) => {
-        if (id) navigate(`/${page}/${_id}`);
+        if (id) navigate(`/${page}/${id}`);
         else navigate(`/${page}`);
       }}
     />
@@ -120,7 +119,6 @@ function App() {
           path="/dashboard"
           element={
             <Layout currentPage="dashboard">
-               {/* Use the wrapper here instead of direct Dashboard */}
               <DashboardWrapper />
             </Layout>
           }
@@ -151,7 +149,6 @@ function App() {
           path="/tags"
           element={
             <Layout currentPage="tags">
-               {/* When a tag is clicked, navigate to dashboard with query param */}
               <Tags 
                 onNavigate={() => {}} 
                 onTagSelect={(tagName) => window.location.href = `/dashboard?tag=${tagName}`} 
