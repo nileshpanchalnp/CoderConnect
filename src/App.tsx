@@ -1,4 +1,4 @@
-import { Routes, Route, useNavigate, useParams, useSearchParams, useLocation } from 'react-router-dom'; // 1. Import useLocation
+import { Routes, Route, useNavigate, useSearchParams, useLocation } from 'react-router-dom'; // 1. Import useLocation
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Navbar } from './components/Navbar';
 import { Sidebar } from './components/Sidebar';
