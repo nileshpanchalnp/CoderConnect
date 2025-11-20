@@ -15,6 +15,20 @@ export const Navbar = ({ onSearch, onNavigate, currentPage }: NavbarProps) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // --- 1. ADD THIS EFFECT FOR REAL-TIME SEARCH ---
+  useEffect(() => {
+    // Set a timer to trigger search 500ms after the user stops typing
+    const delayDebounceFn = setTimeout(() => {
+      if (onSearch) {
+        onSearch(searchQuery);
+      }
+    }, 500);
+
+    // Cleanup function to cancel the timer if the user types again within 500ms
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery, onSearch]);
+  // -----------------------------------------------
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -28,6 +42,7 @@ export const Navbar = ({ onSearch, onNavigate, currentPage }: NavbarProps) => {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    // We keep this in case they hit "Enter", but the useEffect does the work mostly
     if (onSearch) {
       onSearch(searchQuery);
     }
@@ -48,7 +63,7 @@ export const Navbar = ({ onSearch, onNavigate, currentPage }: NavbarProps) => {
               onClick={() => onNavigate('dashboard')}
               className="text-2xl font-bold bg-gradient-to-r from-cyan-500 to-blue-600 bg-clip-text text-transparent hover:scale-105 transition-transform"
             >
-              CoderConnect 
+              CoderConnect
             </button>
 
             <div className="hidden md:flex items-center gap-4">
@@ -82,6 +97,7 @@ export const Navbar = ({ onSearch, onNavigate, currentPage }: NavbarProps) => {
                 type="text"
                 placeholder="Search questions..."
                 value={searchQuery}
+                // The onChange updates state, which triggers the useEffect above
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 bg-white/60 backdrop-blur-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all"
               />

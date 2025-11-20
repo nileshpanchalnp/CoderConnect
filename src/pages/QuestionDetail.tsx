@@ -370,7 +370,6 @@ export const QuestionDetail = ({ }: QuestionDetailProps) => {
                         </Button>
                       )}
                     </div>
-
                     {/* FIX 3: Use optional chaining on answer.comments before length check */}
                     {answer.comments && answer.comments.length > 0 && (
                       <div className="mt-4 space-y-2">
