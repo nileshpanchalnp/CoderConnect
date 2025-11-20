@@ -6,8 +6,8 @@ import {
   ThumbsUp,
   ThumbsDown,
   Tag,
-  ChevronLeft, // Icon for 'Previous'
-  ChevronRight, // Icon for 'Next'
+  ChevronLeft,
+  ChevronRight, 
 } from 'lucide-react';
 import { Card } from '../components/Card';
 import { formatDistanceToNow } from '../utils/date';
@@ -15,7 +15,6 @@ import { Server } from '../Utills/Server';
 import { useNavigate } from 'react-router-dom';
 
 // --- PAGINATION HELPER LOGIC (Added) ---
-
 export const DOTS = '...';
 
 const range = (start: number, end: number) => {
@@ -37,7 +36,6 @@ export const usePagination = ({
   const paginationRange = useMemo(() => {
     // Pages to show: 1 (first) + 1 (last) + 1 (current) + 2*siblings + 2 (dots)
     const totalPageNumbers = siblingCount + 5;
-
     // Case 1: If total pages is less than what we want to show, just show all.
     if (totalPageNumbers >= totalPages) {
       return range(1, totalPages);
@@ -61,7 +59,6 @@ export const usePagination = ({
       let leftRange = range(1, leftItemCount);
       return [...leftRange, DOTS, totalPages];
     }
-
     // Case 3: Left dots, but no right dots
     if (shouldShowLeftDots && !shouldShowRightDots) {
       let rightItemCount = 3 + 2 * siblingCount;
@@ -74,7 +71,6 @@ export const usePagination = ({
       let middleRange = range(leftSiblingIndex, rightSiblingIndex);
       return [firstPageIndex, DOTS, ...middleRange, DOTS, lastPageIndex];
     }
-
     // Fallback (shouldn't be reached)
     return range(1, totalPages);
   }, [totalPages, siblingCount, currentPage]);
@@ -82,7 +78,6 @@ export const usePagination = ({
   return paginationRange;
 };
 
-// --- INTERFACES (Unchanged) ---
 interface DashboardProps {
   onNavigate: (page: string, id?: string) => void;
   searchQuery?: string;
@@ -103,7 +98,6 @@ interface QuestionWithStats {
   tags: { name: string }[];
 }
 
-// --- HELPER COMPONENT: Pagination UI (REPLACED) ---
 interface PaginationControlsProps {
   currentPage: number;
   totalPages: number;
@@ -123,11 +117,11 @@ const PaginationControls = ({
   const paginationRange = usePagination({
     currentPage,
     totalPages,
-    siblingCount: 1, // You can change this
+    siblingCount: 1, 
   });
 
   if (totalPages <= 1) {
-    return null; // Don't show pagination if there's only one page
+    return null; 
   }
 
   const handleNext = () => {
@@ -231,7 +225,6 @@ export const Dashboard = ({ searchQuery, filterMode }: DashboardProps) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(3); 
 
-  // Runs ONCE on mount to fetch all questions
   useEffect(() => {
     const loadQuestions = async () => {
       setLoading(true);
@@ -244,7 +237,7 @@ export const Dashboard = ({ searchQuery, filterMode }: DashboardProps) => {
         });
         const data = response.data.questions || [];
         console.log('Fetched questions:', data);
-        setAllQuestions(data); // Store all fetched questions
+        setAllQuestions(data); 
       } catch (error) {
         console.error('Error loading questions:', error);
       } finally {
@@ -253,14 +246,11 @@ export const Dashboard = ({ searchQuery, filterMode }: DashboardProps) => {
     };
 
     loadQuestions();
-  }, []); // Empty dependency array means this runs only once
+  }, []); 
 
-  // --- CLIENT-SIDE FILTERING & SORTING ---
-  // This recalculates only when allQuestions, searchQuery, or filterMode changes
   const filteredQuestions = useMemo(() => {
     let data: QuestionWithStats[] = [...allQuestions];
 
-    // 1. Filter
     if (filterMode === 'tag' && searchQuery) {
       const tagQuery = searchQuery.toLowerCase();
       data = data.filter((item) =>
@@ -275,7 +265,6 @@ export const Dashboard = ({ searchQuery, filterMode }: DashboardProps) => {
       );
     }
 
-    // 2. Sort
     data.sort(
       (a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -284,21 +273,16 @@ export const Dashboard = ({ searchQuery, filterMode }: DashboardProps) => {
     return data;
   }, [allQuestions, searchQuery, filterMode]);
 
-  // --- RESET TO PAGE 1 ON FILTER/PAGE SIZE CHANGE ---
-  // If filters or page size change, reset to page 1
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, filterMode, itemsPerPage]);
 
-  // --- CLIENT-SIDE PAGINATION ---
-  // This calculates the slice for the current page
   const paginatedQuestions = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     return filteredQuestions.slice(startIndex, endIndex);
   }, [filteredQuestions, currentPage, itemsPerPage]);
 
-  // --- CALCULATIONS FOR UI ---
   const totalPages = Math.max(
     1,
     Math.ceil(filteredQuestions.length / itemsPerPage)
@@ -319,7 +303,6 @@ export const Dashboard = ({ searchQuery, filterMode }: DashboardProps) => {
     setCurrentPage(1);
   };
 
-  // --- RENDER LOGIC ---
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-blue-50 to-purple-50 p-4">
@@ -345,7 +328,6 @@ export const Dashboard = ({ searchQuery, filterMode }: DashboardProps) => {
         </div>
 
         <div className="space-y-4">
-          {/* Check if filtered list is empty */}
           {filteredQuestions.length === 0 ? (
             <Card className="p-8 text-center">
               <p className="text-gray-600">
@@ -355,7 +337,6 @@ export const Dashboard = ({ searchQuery, filterMode }: DashboardProps) => {
               </p>
             </Card>
           ) : (
-            // Map over the PAGINATED list
             paginatedQuestions.map((question) => (
               <Card key={question._id}>
                 <div
@@ -383,8 +364,6 @@ export const Dashboard = ({ searchQuery, filterMode }: DashboardProps) => {
                         <span className="font-medium">{question.views}</span>
                       </div>
                     </div>
-
-                    {/* Content */}
                     <div className="flex-1">
                       <h2
                        
