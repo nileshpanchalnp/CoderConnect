@@ -15,12 +15,11 @@ import { ToastContainer } from 'react-toastify';
 // --- LAYOUT COMPONENT ---
 function Layout({ children, currentPage }: { children: React.ReactNode; currentPage: string }) {
   const navigate = useNavigate();
-  const location = useLocation(); // 2. Get current location
+  const location = useLocation(); 
   const { loading } = useAuth();
 
   const handleSearch = (query: string) => {
     if (query.trim()) {
-      // If user types something, always go to dashboard search results
       navigate(`/dashboard?search=${encodeURIComponent(query)}`);
     } else {
       if (location.pathname === '/dashboard' || location.pathname === '/') {
@@ -81,8 +80,6 @@ function DashboardWrapper() {
 
 // --- QUESTION WRAPPER ---
 function QuestionDetailWrapper() {
-  // We don't need to grab _id here if QuestionDetail uses useParams, 
-  // but keeping the wrapper is fine for clean props.
   const navigate = useNavigate();
 
   return (
