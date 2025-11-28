@@ -70,7 +70,7 @@ const handleSubmit = async (e: React.FormEvent) => {
       title,
       description,
       tags,
-      userId: user.id, // logged-in user ID
+      userId: user.id, 
     });
 
     // ✅ Get the created question ID from response

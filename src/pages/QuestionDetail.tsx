@@ -73,20 +73,15 @@ export const QuestionDetail = ({ }: QuestionDetailProps) => {
   };
 
   const handleVote = async (type: 'like' | 'dislike', targetType: 'question' | 'answer', _id: string) => {
-    // Assuming 'user' is the state variable holding the authenticated user object.
-    // The 'user' check is good for ensuring authentication before proceeding.
     if (!user) {
       toast.error('Please log in before voting.');
       return;
     }
 
-    // 1. Construct the dynamic URL path
     let url: string;
     if (targetType === 'question') {
-      // Matches the server route: POST /Vote/question/:question_id
       url = Server + `Vote/question/${_id}`;
     } else {
-      // Matches the server route: POST /Vote/answer/:answer_id
       url = Server + `Vote/answer/${_id}`;
     }
 
@@ -130,19 +125,15 @@ export const QuestionDetail = ({ }: QuestionDetailProps) => {
     if (!user || !commentContent.trim() || !commentTarget) return;
 
     const content = commentContent.trim();
-    // ✅ FIX: The ID is saved in state as 'id', so access it as 'commentTarget.id'
     const targetId = commentTarget.id;
 
-    // 1. Determine the correct API endpoint and route prefix
     let url: string;
     let data: { content: string; author_id: string };
 
 
     if (commentTarget.type === 'question') {
-      // Use the correctly retrieved targetId
       url = Server + `CommentQuestion/create/${targetId}`;
     } else {
-      // Use the correctly retrieved targetId
       url = Server + `CommnetAnswer/create/${targetId}`;
     }
 
