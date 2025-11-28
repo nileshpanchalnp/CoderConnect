@@ -11,15 +11,13 @@ import axios from 'axios';
 import { Server } from '../Utills/Server';
 import { useNavigate, useParams } from 'react-router-dom';
 
-// Removed _id prop since it's retrieved via useParams()
 interface QuestionDetailProps {
   onNavigate: (page: string) => void;
 }
 
-// Removed local Profile interface, using imported Profile type
 interface QuestionWithDetails extends Question {
   _id: string;
-  tags?: { name: string }[]; // Added ? for safety
+  tags?: { name: string }[]; 
   vote_likes: number;
   vote_dislikes: number;
   user_vote?: 'like' | 'dislike' | null;
@@ -37,11 +35,9 @@ interface AnswerWithDetails extends Answer {
 
 export const QuestionDetail = ({ }: QuestionDetailProps) => {
   const navigate = useNavigate();
-  // We use the parameter name that the server expects: _id
   const { _id } = useParams();
   const { user } = useAuth();
   const [question, setQuestion] = useState<QuestionWithDetails | null>(null);
-  // Initializing array states to empty array [] prevents .length error on initial render
   const [answers, setAnswers] = useState<AnswerWithDetails[]>([]);
   const [questionComments, setQuestionComments] = useState<Comment[]>([]);
   const [answerContent, setAnswerContent] = useState('');
@@ -86,8 +82,6 @@ export const QuestionDetail = ({ }: QuestionDetailProps) => {
     }
 
     try {
-      // 2. Make the POST request
-      // Note: We only send vote_type. The author_id is handled by the 'auth' middleware on the backend.
       await axios.post(url, {
         vote_type: type,
       });
@@ -259,10 +253,9 @@ export const QuestionDetail = ({ }: QuestionDetailProps) => {
                 )}
               </div>
 
-              {/* FIX 2: Use optional chaining on questionComments before length check */}
+
               {questionComments?.length > 0 && (
                 <div className="mt-4 space-y-2">
-                  {/* Since we checked length > 0, we can safely map */}
                   {questionComments.map((comment) => (
                     <div key={comment.id} className="pl-4 border-l-2 border-gray-300">
                       <p className="text-sm text-gray-700">{comment.content}</p>
