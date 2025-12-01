@@ -34,7 +34,18 @@ function Layout({ children, currentPage }: { children: React.ReactNode; currentP
   };
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+    return   <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
+      <div className="flex flex-col items-center">
+        {/* The actual spinner animation */}
+        <div 
+          className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500 mb-4"
+          aria-label="Loading"
+        ></div>
+        <p className="text-xl font-semibold text-gray-700">Loading Application...</p>
+        <p className="text-sm text-gray-500 mt-1">Please wait a moment.</p>
+      </div>
+    </div>
+  
   }
 
   return (
