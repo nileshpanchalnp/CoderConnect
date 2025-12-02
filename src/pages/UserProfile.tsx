@@ -53,8 +53,6 @@ export const UserProfile = ({ onNavigate }: UserProfileProps) => {
     try {
       // Make one single call to your backend
       const res = await axios.get(Server + `profile/me`);
-
-      // Your backend now provides everything
       setStats(res.data.stats);
       setQuestions(res.data.questions || []);
       console.log('Fetched user data:', res.data.questions);
@@ -67,7 +65,6 @@ export const UserProfile = ({ onNavigate }: UserProfileProps) => {
   };
 
   if (!user) {
-    // ... (no changes to this return block)
     return (
       <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-blue-50 to-purple-50 flex items-center justify-center p-4">
         <Card className="p-8 text-center">
@@ -88,7 +85,6 @@ export const UserProfile = ({ onNavigate }: UserProfileProps) => {
   };
 
   if (loading) {
-     // ... (no changes to this return block)
     return (
       <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-blue-50 to-purple-50 p-4">
         <div className="max-w-6xl mx-auto pt-8">
@@ -101,7 +97,6 @@ export const UserProfile = ({ onNavigate }: UserProfileProps) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-blue-50 to-purple-50 p-4">
       <div className="max-w-6xl mx-auto pt-8">
-        {/* ... (no changes to Card block) ... */}
         <Card className="p-8 mb-6">
           <div className="flex items-start gap-6">
             <div className="p-6 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-full">
@@ -123,7 +118,6 @@ export const UserProfile = ({ onNavigate }: UserProfileProps) => {
           </div>
         </Card>
         
-        {/* ... (no changes to stats grid) ... */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <Card className="p-6">
             <div className="flex items-center gap-3">
@@ -169,7 +163,6 @@ export const UserProfile = ({ onNavigate }: UserProfileProps) => {
         <div>
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Your Questions</h2>
           {questions.length === 0 ? (
-            // ... (no changes to this card) ...
             <Card className="p-8 text-center">
               <p className="text-gray-600 mb-4">You haven't asked any questions yet</p>
               <Button onClick={() => onNavigate('ask')}>Ask Your First Question</Button>
@@ -178,7 +171,7 @@ export const UserProfile = ({ onNavigate }: UserProfileProps) => {
             <div className="space-y-4">
               {questions.map((question) => (
                 <Card
-                  key={question._id} // ✅ CHANGE to _id
+                  key={question._id}
                   hover
                   className="p-6 cursor-pointer"
                   
