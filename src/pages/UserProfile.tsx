@@ -86,11 +86,34 @@ export const UserProfile = ({ onNavigate }: UserProfileProps) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-blue-50 to-purple-50 p-4">
-        <div className="max-w-6xl mx-auto pt-8">
-          <div className="text-center text-gray-600">Loading profile...</div>
+     <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-blue-50 to-purple-50 p-4">
+  <div className="max-w-7xl mx-auto pt-4">
+    <div className="flex items-center justify-center w-full h-screen bg-white/50 backdrop-blur-sm">
+      
+      {/* WRAPPER: Use flex-col to stack items vertically and center them */}
+      <div className="flex flex-col items-center">
+        
+        {/* Spinner Container */}
+        <div className="relative">
+          {/* Outer Ring */}
+          <div className="animate-spin h-20 w-20 rounded-full border-[6px] border-gray-300 border-t-blue-600"></div>
+
+          {/* Glowing Center Dot */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="h-6 w-6 bg-blue-600 rounded-full animate-pulse shadow-[0_0_20px_4px_rgba(37,99,235,0.6)]"></div>
+          </div>
         </div>
+
+        {/* Text Container - No longer absolute. Used margin-top (mt-8) for spacing */}
+        <div className="mt-8 text-sm font-semibold text-gray-600 animate-bounce text-center">
+          Loading Profile...
+        </div>
+
       </div>
+
+    </div>
+  </div>
+</div>
     );
   }
 

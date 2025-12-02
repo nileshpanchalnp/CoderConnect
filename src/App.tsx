@@ -1,5 +1,5 @@
-import { Routes, Route, useNavigate, useSearchParams, useLocation } from 'react-router-dom'; // 1. Import useLocation
-import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { Routes, Route, useNavigate, useSearchParams, useLocation } from 'react-router-dom'; 
+import { AuthProvider } from './contexts/AuthContext';
 import { Navbar } from './components/Navbar';
 import { Sidebar } from './components/Sidebar';
 import { Login } from './pages/Login';
@@ -16,7 +16,6 @@ import { ToastContainer } from 'react-toastify';
 function Layout({ children, currentPage }: { children: React.ReactNode; currentPage: string }) {
   const navigate = useNavigate();
   const location = useLocation(); 
-  const { loading } = useAuth();
 
   const handleSearch = (query: string) => {
     if (query.trim()) {
@@ -33,20 +32,6 @@ function Layout({ children, currentPage }: { children: React.ReactNode; currentP
     else navigate(`/${page}`);
   };
 
-  if (loading) {
-    return   <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
-      <div className="flex flex-col items-center">
-        {/* The actual spinner animation */}
-        <div 
-          className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500 mb-4"
-          aria-label="Loading"
-        ></div>
-        <p className="text-xl font-semibold text-gray-700">Loading Application...</p>
-        <p className="text-sm text-gray-500 mt-1">Please wait a moment.</p>
-      </div>
-    </div>
-  
-  }
 
   return (
     <div className="min-h-screen flex flex-col">

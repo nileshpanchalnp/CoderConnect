@@ -7,7 +7,7 @@ import {
   ThumbsDown,
   Tag,
   ChevronLeft,
-  ChevronRight, 
+  ChevronRight,
 } from 'lucide-react';
 import { Card } from '../components/Card';
 import { formatDistanceToNow } from '../utils/date';
@@ -117,11 +117,11 @@ const PaginationControls = ({
   const paginationRange = usePagination({
     currentPage,
     totalPages,
-    siblingCount: 1, 
+    siblingCount: 1,
   });
 
   if (totalPages <= 1) {
-    return null; 
+    return null;
   }
 
   const handleNext = () => {
@@ -223,7 +223,7 @@ export const Dashboard = ({ searchQuery, filterMode }: DashboardProps) => {
   const [allQuestions, setAllQuestions] = useState<QuestionWithStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(3); 
+  const [itemsPerPage, setItemsPerPage] = useState(3);
 
   useEffect(() => {
     const loadQuestions = async () => {
@@ -237,7 +237,7 @@ export const Dashboard = ({ searchQuery, filterMode }: DashboardProps) => {
         });
         const data = response.data.questions || [];
         console.log('Fetched questions:', data);
-        setAllQuestions(data); 
+        setAllQuestions(data);
       } catch (error) {
         console.error('Error loading questions:', error);
       } finally {
@@ -246,7 +246,7 @@ export const Dashboard = ({ searchQuery, filterMode }: DashboardProps) => {
     };
 
     loadQuestions();
-  }, []); 
+  }, []);
 
   const filteredQuestions = useMemo(() => {
     let data: QuestionWithStats[] = [...allQuestions];
@@ -305,26 +305,34 @@ export const Dashboard = ({ searchQuery, filterMode }: DashboardProps) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-blue-50 to-purple-50 p-4">
-        <div className="max-w-7xl mx-auto pt-4">
-        <div className="flex items-center justify-center w-full h-screen bg-white/50 backdrop-blur-sm">
-       <div className="relative">
-       {/* Outer Ring */}
-         <div className="animate-spin h-20 w-20 rounded-full border-[6px] border-gray-300 border-t-blue-600"></div>
+  <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-blue-50 to-purple-50 p-4">
+  <div className="max-w-7xl mx-auto pt-4">
+    <div className="flex items-center justify-center w-full h-screen bg-white/50 backdrop-blur-sm">
+      
+      {/* WRAPPER: Use flex-col to stack items vertically and center them */}
+      <div className="flex flex-col items-center">
+        
+        {/* Spinner Container */}
+        <div className="relative">
+          {/* Outer Ring */}
+          <div className="animate-spin h-20 w-20 rounded-full border-[6px] border-gray-300 border-t-blue-600"></div>
 
-        {/* Glowing Center Dot */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="h-6 w-6 bg-blue-600 rounded-full animate-pulse shadow-[0_0_20px_4px_rgba(37,99,235,0.6)]"></div>
-       </div>
-
-       {/* Floating Text */}
-         <div className="absolute -bottom-10 w-full text-center text-sm font-semibold text-gray-600 animate-bounce">
-           Loading questions...
-         </div>
-      </div>
-     </div>;
+          {/* Glowing Center Dot */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="h-6 w-6 bg-blue-600 rounded-full animate-pulse shadow-[0_0_20px_4px_rgba(37,99,235,0.6)]"></div>
+          </div>
         </div>
+
+        {/* Text Container - No longer absolute. Used margin-top (mt-8) for spacing */}
+        <div className="mt-8 text-sm font-semibold text-gray-600 animate-bounce text-center">
+          Loading questions...
+        </div>
+
       </div>
+
+    </div>
+  </div>
+</div>
     );
   }
 
@@ -356,7 +364,7 @@ export const Dashboard = ({ searchQuery, filterMode }: DashboardProps) => {
               <Card key={question._id}>
                 <div
                   className="p-6 cursor-pointer hover:shadow-md transition-all rounded-2xl"
-                   onClick={() => handleQuestionClick(question._id)}
+                  onClick={() => handleQuestionClick(question._id)}
                 >
                   <div className="flex gap-6">
 
@@ -381,7 +389,7 @@ export const Dashboard = ({ searchQuery, filterMode }: DashboardProps) => {
                     </div>
                     <div className="flex-1">
                       <h2
-                       
+
                         className="text-xl font-semibold text-gray-900 mb-2 hover:text-cyan-600 transition-colors"
                       >
                         {question.title}

@@ -65,7 +65,7 @@ export const Tags = ({ onTagSelect }: TagsProps) => {
          </div>
 
        {/* Floating Text */}
-         <div className="absolute -bottom-10 w-full text-center text-sm font-semibold text-gray-600 animate-bounce">
+         <div className="absolute -bottom-10 -translate-x-1/2 w-max text-center text-sm font-semibold text-gray-600 animate-bounce">
            Loading tags...
          </div>
        </div>

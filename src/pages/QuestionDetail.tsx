@@ -17,7 +17,7 @@ interface QuestionDetailProps {
 
 interface QuestionWithDetails extends Question {
   _id: string;
-  tags?: { name: string }[]; 
+  tags?: { name: string }[];
   vote_likes: number;
   vote_dislikes: number;
   user_vote?: 'like' | 'dislike' | null;
@@ -112,7 +112,7 @@ export const QuestionDetail = ({ }: QuestionDetailProps) => {
 
   const handlePostComment = async (e: React.FormEvent) => {
     e.preventDefault();
-     if (!user) {
+    if (!user) {
       toast.error('Please log in before Comment.');
       return;
     }
@@ -143,7 +143,7 @@ export const QuestionDetail = ({ }: QuestionDetailProps) => {
       // 3. Clear state and reload data on success
       setCommentContent('');
       setCommentTarget(null);
-       toast.success('comment Create successful!');
+      toast.success('comment Create successful!');
       loadQuestion();
 
     } catch (error) {
@@ -154,8 +154,31 @@ export const QuestionDetail = ({ }: QuestionDetailProps) => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-blue-50 to-purple-50 p-4">
-        <div className="max-w-6xl mx-auto pt-8">
-          <div className="text-center text-gray-600">Loading question...</div>
+        <div className="max-w-7xl mx-auto pt-4">
+          <div className="flex items-center justify-center w-full h-screen bg-white/50 backdrop-blur-sm">
+
+            {/* WRAPPER: Use flex-col to stack items vertically and center them */}
+            <div className="flex flex-col items-center">
+
+              {/* Spinner Container */}
+              <div className="relative">
+                {/* Outer Ring */}
+                <div className="animate-spin h-20 w-20 rounded-full border-[6px] border-gray-300 border-t-blue-600"></div>
+
+                {/* Glowing Center Dot */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="h-6 w-6 bg-blue-600 rounded-full animate-pulse shadow-[0_0_20px_4px_rgba(37,99,235,0.6)]"></div>
+                </div>
+              </div>
+
+              {/* Text Container - No longer absolute. Used margin-top (mt-8) for spacing */}
+              <div className="mt-8 text-sm font-semibold text-gray-600 animate-bounce text-center">
+                Loading questions...
+              </div>
+
+            </div>
+
+          </div>
         </div>
       </div>
     );
@@ -182,8 +205,8 @@ export const QuestionDetail = ({ }: QuestionDetailProps) => {
               <button
                 onClick={() => handleVote('like', 'question', question._id)}
                 className={`p-2 rounded-lg transition-all ${question.user_vote === 'like'
-                    ? 'bg-green-100 text-green-600'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'bg-green-100 text-green-600'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
               >
                 <ThumbsUp className="w-6 h-6" />
@@ -194,8 +217,8 @@ export const QuestionDetail = ({ }: QuestionDetailProps) => {
               <button
                 onClick={() => handleVote('dislike', 'question', question._id)}
                 className={`p-2 rounded-lg transition-all ${question.user_vote === 'dislike'
-                    ? 'bg-red-100 text-red-600'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'bg-red-100 text-red-600'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
               >
                 <ThumbsDown className="w-6 h-6" />
@@ -306,8 +329,8 @@ export const QuestionDetail = ({ }: QuestionDetailProps) => {
                     <button
                       onClick={() => handleVote('like', 'answer', answer._id)}
                       className={`p-2 rounded-lg transition-all ${answer.user_vote === 'like'
-                          ? 'bg-green-100 text-green-600'
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        ? 'bg-green-100 text-green-600'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                         }`}
                     >
                       <ThumbsUp className="w-5 h-5" />
@@ -318,8 +341,8 @@ export const QuestionDetail = ({ }: QuestionDetailProps) => {
                     <button
                       onClick={() => handleVote('dislike', 'answer', answer._id)}
                       className={`p-2 rounded-lg transition-all ${answer.user_vote === 'dislike'
-                          ? 'bg-red-100 text-red-600'
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        ? 'bg-red-100 text-red-600'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                         }`}
                     >
                       <ThumbsDown className="w-5 h-5" />
