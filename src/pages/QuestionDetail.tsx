@@ -29,7 +29,7 @@ interface AnswerWithDetails extends Answer {
   vote_likes: number;
   vote_dislikes: number;
   user_vote?: 'like' | 'dislike' | null;
-  comments?: Comment[]; // Added ? for safety
+  comments?: Comment[]; 
   author_id?: Profile;
 }
 
