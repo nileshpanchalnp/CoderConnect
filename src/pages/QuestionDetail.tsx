@@ -59,8 +59,8 @@ export const QuestionDetail = ({ }: QuestionDetailProps) => {
       // Check if question exists and set state
       setQuestion(res.data.question || null);
       console.log("Question data:", res.data.question);
-      setQuestionComments(res.data.questionComments || []); // Safely default to []
-      setAnswers(res.data.answers || []); // Safely default to []
+      setQuestionComments(res.data.questionComments || []); 
+      setAnswers(res.data.answers || []); 
     } catch (error) {
       console.error("Error loading question:", error);
     } finally {
