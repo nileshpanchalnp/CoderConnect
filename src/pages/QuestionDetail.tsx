@@ -56,7 +56,6 @@ export const QuestionDetail = ({ }: QuestionDetailProps) => {
     setLoading(true);
     try {
       const res = await axios.get(Server + `Question/get/${_id}`);
-      // Check if question exists and set state
       setQuestion(res.data.question || null);
       console.log("Question data:", res.data.question);
       setQuestionComments(res.data.questionComments || []); 
