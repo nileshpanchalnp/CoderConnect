@@ -37,7 +37,7 @@ export const Login = () => {
           <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-500 to-blue-600 bg-clip-text text-transparent mb-2">
             Welcome Back
           </h1>
-          <p className="text-gray-600">Sign in to continue to DevFlow</p>
+          <p className="text-gray-600">Sign in to continue to CoderConnect</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">

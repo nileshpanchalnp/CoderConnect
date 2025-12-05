@@ -41,7 +41,7 @@ export const Signup = () => {
       <Card className="w-full max-w-md p-8">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-500 to-blue-600 bg-clip-text text-transparent mb-2">
-            Join DevFlow
+            Join CoderConnect
           </h1>
           <p className="text-gray-600">Create your account to get started</p>
         </div>
