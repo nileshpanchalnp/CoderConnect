@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ThumbsUp, ThumbsDown, MessageSquare, Eye, Tag, Trophy } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, MessageSquare, Eye, Tag, Trophy, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'react-toastify';
 import { Question, Answer, Comment, Profile } from '../lib/supabase';
@@ -9,7 +9,7 @@ import { Textarea } from '../components/Input';
 import { formatDistanceToNow } from '../utils/date';
 import axios from 'axios';
 import { Server } from '../Utills/Server';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 
 interface QuestionDetailProps {
   onNavigate: (page: string) => void;
@@ -198,6 +198,14 @@ export const QuestionDetail = ({ }: QuestionDetailProps) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-blue-50 to-purple-50 p-4">
       <div className="max-w-6xl mx-auto pt-8 pb-12">
+             {/* Back Button */}
+        <Link
+          to="/"
+          className="inline-flex items-center text-gray-600 hover:text-blue-600 mb-6 transition-colors"
+        >
+          <ArrowLeft className="h-5 w-5 mr-2" />
+          Back to Questions
+        </Link>
         <Card className="p-8 mb-6">
           <div className="flex gap-6">
             <div className="flex flex-col items-center gap-3 min-w-[60px]">
