@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Tag as TagIcon, FileQuestion } from 'lucide-react';
+import { Tag as TagIcon, FileQuestion, ArrowLeft } from 'lucide-react';
 import { Card } from '../components/Card';
 import axios from 'axios'; // 1. Import axios
 import { Server } from '../Utills/Server';
+import { Link } from 'react-router-dom';
 
 // NOTE: Make sure you have your axios base URL and credentials set globally
 // in your main app file (like App.tsx or index.tsx)
@@ -80,16 +81,25 @@ export const Tags = ({ onTagSelect }: TagsProps) => {
       <div className="max-w-6xl mx-auto pt-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Tags</h1>
+           
           {/* <p className="text-gray-600">
             Browse questions by tag. Click on a tag to see all related questions.
           </p> */}
         </div>
+            {/* Back Button */}
+        <Link
+          to="/"
+          className="inline-flex items-center text-gray-600 hover:text-blue-600 mb-6 transition-colors"
+        >
+          <ArrowLeft className="h-5 w-5 mr-2" />
+          Back to Questions
+        </Link>
 
         {tags.length === 0 ? (
           <Card className="p-8 text-center">
             <p className="text-gray-600">No tags yet</p>
           </Card>
-        ) : (
+        ) : (        
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {/* 6. Update map to use 'tag.name' as the key */}
             {tags.map((tag) => (
