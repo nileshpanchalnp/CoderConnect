@@ -29,16 +29,10 @@ export const Tags = ({ onTagSelect }: TagsProps) => {
     loadTags();
   }, []);
 
-  // 3. This function is updated to use axios
   const loadTags = async () => {
     setLoading(true);
     try {
-      // 4. Call your new backend API endpoint
-      // Adjust the URL if your route is different (e.g., '/questions/tags')
       const { data } = await axios.get<TagWithCount[]>(Server +'Question/tags');
-
-      // 5. Set the state with the data from your API
-      // The aggregation already filters out tags with 0 questions
       setTags(data);
     } catch (error) {
       console.error('Error loading tags:', error);
