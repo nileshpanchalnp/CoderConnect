@@ -1,14 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Tag as TagIcon, FileQuestion, ArrowLeft } from 'lucide-react';
 import { Card } from '../components/Card';
-import axios from 'axios'; // 1. Import axios
+import axios from 'axios'; 
 import { Server } from '../Utills/Server';
 import { Link } from 'react-router-dom';
 
-// NOTE: Make sure you have your axios base URL and credentials set globally
-// in your main app file (like App.tsx or index.tsx)
-// axios.defaults.baseURL = 'http://localhost:5000/api'; // Your backend URL
-// axios.defaults.withCredentials = true;
+
 
 interface TagsProps {
   onNavigate: (page: string) => void;
