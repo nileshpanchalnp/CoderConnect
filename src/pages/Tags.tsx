@@ -12,7 +12,6 @@ interface TagsProps {
   onTagSelect: (tag: string) => void;
 }
 
-// 2. This interface now matches our new API response
 interface TagWithCount {
   name: string;
   question_count: number;
@@ -92,7 +91,6 @@ export const Tags = ({ onTagSelect }: TagsProps) => {
           </Card>
         ) : (        
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {/* 6. Update map to use 'tag.name' as the key */}
             {tags.map((tag) => (
               <Card
                 key={tag.name} 
