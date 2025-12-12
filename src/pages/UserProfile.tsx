@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Trophy, FileQuestion, MessageSquare, User as UserIcon } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-// import { supabase, Question } from '../lib/supabase'; // ⛔️ REMOVE SUPABASE
-import axios from 'axios'; // ✅ ADD AXIOS
-import { Server } from '../Utills/Server'; // ✅ ADD SERVER
+import axios from 'axios'; 
+import { Server } from '../Utills/Server'; 
 import { Card } from '../components/Card';
 import { Button } from '../components/Button';
 import { formatDistanceToNow } from '../utils/date';
@@ -13,9 +12,8 @@ interface UserProfileProps {
   onNavigate: (page: string, id?: string) => void;
 }
 
-// ✅ DEFINE THE QUESTION TYPE TO MATCH YOUR BACKEND
 interface Question {
-  _id: string; // Mongoose uses _id
+  _id: string; 
   title: string;
   description: string;
   views: number;
@@ -45,7 +43,6 @@ export const UserProfile = ({ onNavigate }: UserProfileProps) => {
     }
   }, [user]);
 
-  // ✅ REWRITE loadUserData TO USE AXIOS
   const loadUserData = async () => {
     if (!user) return;
 
