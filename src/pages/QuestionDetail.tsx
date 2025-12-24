@@ -6,7 +6,7 @@ import { Question, Answer, Comment, Profile } from '../lib/supabase';
 import { Card } from '../components/Card';
 import { Button } from '../components/Button';
 import { Textarea } from '../components/Input';
-import { formatDistanceToNow } from '../utils/date';
+import { formatDistanceToNow } from '../Utills/date';
 import axios from 'axios';
 import { Server } from '../Utills/Server';
 import { Link, useNavigate, useParams } from 'react-router-dom';

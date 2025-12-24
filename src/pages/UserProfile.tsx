@@ -5,7 +5,7 @@ import axios from 'axios';
 import { Server } from '../Utills/Server'; 
 import { Card } from '../components/Card';
 import { Button } from '../components/Button';
-import { formatDistanceToNow } from '../utils/date';
+import { formatDistanceToNow } from '../Utills/date';
 import { useNavigate } from 'react-router-dom';
 
 interface UserProfileProps {

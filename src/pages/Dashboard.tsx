@@ -10,7 +10,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { Card } from '../components/Card';
-import { formatDistanceToNow } from '../utils/date';
+import { formatDistanceToNow } from '../Utills/date';
 import { Server } from '../Utills/Server';
 import { useNavigate } from 'react-router-dom';
 
