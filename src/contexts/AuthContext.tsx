@@ -66,8 +66,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signOut = async () => {
-    await toast.success('USer LogOut successful!');
     await axios.post(Server+`User/signout`);
+    toast.success('User LogOut successful!');
     setUser(null);
   };
 
